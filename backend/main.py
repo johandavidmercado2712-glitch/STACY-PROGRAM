@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from app.controllers.historial_controller import MostrarComandos
+from app.controllers.historial_controller import MostrarComandos, MostrarComandosCompletos
 
 app = FastAPI()
 
@@ -16,6 +16,6 @@ async def read_commands():
 
 @app.get("/historialComandosCompletos")
 async def read_total_commands():
-    controlador = MostrarComandos()
+    controlador = MostrarComandosCompletos()
     comandos = controlador.ejecutar()
     return {"comandos": comandos}
