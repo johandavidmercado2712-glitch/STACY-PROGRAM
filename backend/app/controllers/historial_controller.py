@@ -10,14 +10,17 @@ class HistorialControlador:
         # Lógica de decisión: Prioridad Pipe > FC > Archivo
         comandos = self.modelo.obtener_desde_pipe()
         if comandos:
+            comandos = list(dict.fromkeys(comandos))  # Eliminar duplicados manteniendo el orden
             self.vista.mostrar_comandos(comandos, "Comandos desde PIPE") #(stdin) - prioridad máxima
             return
 
         comandos = self.modelo.obtener_desde_fc()
         if comandos:
+            comandos = list(dict.fromkeys(comandos))  # Eliminar duplicados manteniendo el orden
             self.vista.mostrar_comandos(comandos, "Comandos desde FC") #(comando fc -l -11)
         else:
             comandos = self.modelo.obtener_desde_archivo()
+            comandos = list(dict.fromkeys(comandos))  # Eliminar duplicados manteniendo el orden
             self.vista.mostrar_comandos(comandos, "Comandos desde ARCHIVO .zsh_history")#(~/.zsh_history)
 
 
@@ -30,12 +33,15 @@ class HistorialControladorCompleto:
         # Lógica de decisión: Prioridad Pipe > FC > Archivo
         comandos = self.modelo.obtener_todo_desde_pipe()
         if comandos:
+            comandos = list(dict.fromkeys(comandos))  # Eliminar duplicados manteniendo el orden
             self.vista.mostrar_comandos_completos(comandos, "Todo el historial desde PIPE") #(stdin) - prioridad máxima
             return
 
         comandos = self.modelo.obtener_todo_desde_fc()
         if comandos:
+            comandos = list(dict.fromkeys(comandos))  # Eliminar duplicados manteniendo el orden
             self.vista.mostrar_comandos_completos(comandos, "Todo el historial desde FC") #(comando fc -l)
         else:
             comandos = self.modelo.obtener_todo_desde_archivo()
+            comandos = list(dict.fromkeys(comandos))  # Eliminar duplicados manteniendo el orden
             self.vista.mostrar_comandos_completos(comandos, "Todo el historial desde ARCHIVO .zsh_history")#(~/.zsh_history)

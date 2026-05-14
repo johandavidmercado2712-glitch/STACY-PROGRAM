@@ -4,11 +4,11 @@ import subprocess
 
 class HistorialModelo: # muestra el historial de comandos del usuario dependiendo de su sistema operativo y tienen limite de 11 comandos 
     def obtener_desde_archivo(self):
-        histfile = os.path.expanduser("~/.zsh_history")
-        if os.path.exists(histfile):
-            with open(histfile, "r", errors="ignore") as f:
-                lines = f.readlines()
-                return [l.split(';', 1)[1].strip() for l in lines[-11:] if ';' in l]
+        histfile = os.path.expanduser("~/.zsh_history") #define la ruta de windows "/home/juan/.zsh_history"
+        if os.path.exists(histfile): #si exite continua sino retorna una lista vacia
+            with open(histfile, "r", errors="ignore") as f:#abre el archivo en modo lectura y omite los errores de codificación
+                lines = f.readlines() #lee todas las líneas del archivo y las almacena en una lista
+                return [l.split(';', 1)[1].strip() for l in lines[-11:] if ';' in l] #retorna una lista con 11 comandos más recientes, eliminando la parte de tiempo y el número de comando
         return []
 
     def obtener_desde_fc(self):
