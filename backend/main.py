@@ -1,5 +1,21 @@
-from app.controllers.historial_controller import HistorialControlador
+from fastapi import FastAPI
+from app.controllers.historial_controller import MostrarComandos
 
-if __name__ == "__main__":
-    app = HistorialControlador()
-    app.ejecutar()
+app = FastAPI()
+
+# comandosJS = controlador.modelo.mostrar_comandos()
+@app.get("/")
+async def root():
+    return {"message": "Hello World"} 
+
+@app.get("/historialComandos")
+async def read_commands():
+    controlador = MostrarComandos()
+    comandos = controlador.ejecutar() 
+    return {"comandos": comandos}
+
+@app.get("/historialComandosCompletos")
+async def read_total_commands():
+    controlador = MostrarComandos()
+    comandos = controlador.ejecutar()
+    return {"comandos": comandos}
