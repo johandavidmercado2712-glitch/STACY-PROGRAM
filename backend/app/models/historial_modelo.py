@@ -1,6 +1,5 @@
 import os
-import sys
-import subprocess
+import subprocess #ejecutar comandos de terminal desde python
 
 def _detectar_historial():
     """Detecta el shell del usuario y devuelve la ruta del archivo de historial."""
