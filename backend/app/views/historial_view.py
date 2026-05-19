@@ -4,8 +4,12 @@ class HistorialVista:
         if not comandos:
             print("No se encontraron comandos.")
         else:
-            for comando in comandos:
-                print(f"> {comando.strip()}")
+            for cmd_info in comandos:
+                if isinstance(cmd_info, dict):
+                    print(f"[{cmd_info['fecha']}] {cmd_info['ruta']}")
+                    print(f"  > {cmd_info['comando']}")
+                else:
+                    print(f"> {cmd_info.strip()}")
 
 class HistorialVistaCompleto:
     def mostrar_comandos_completos(self, comandos, titulo):
@@ -13,5 +17,9 @@ class HistorialVistaCompleto:
         if not comandos:
             print("No se encontraron comandos.")
         else:
-            for comando in comandos:
-                print(f"> {comando.strip()}")
+            for cmd_info in comandos:
+                if isinstance(cmd_info, dict):
+                    print(f"[{cmd_info['fecha']}] {cmd_info['ruta']}")
+                    print(f"  > {cmd_info['comando']}")
+                else:
+                    print(f"> {cmd_info.strip()}")

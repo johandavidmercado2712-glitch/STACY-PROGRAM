@@ -1,7 +1,26 @@
 from app.models.historial_modelo import HistorialModelo, HistorialModeloCompleto
 from app.views.historial_view import HistorialVista, HistorialVistaCompleto
 
+
+def eliminar_duplicados(comandos):
+    """Elimina comandos duplicados manteniendo el orden."""
+    vistos = set()  # un conjunto que no permite duplicados
+    resultado = []  # se guardan los comandos sin duplicidad
+
+    for cmd_info in comandos:
+        if isinstance(cmd_info, dict):  # esto es un diccionario? que tiene clave y valor 
+            if cmd_info["comando"] not in vistos: 
+                vistos.add(cmd_info["comando"])
+                resultado.append(cmd_info)
+        else:
+            if cmd_info not in vistos:
+                vistos.add(cmd_info)
+                resultado.append(cmd_info)
+    return resultado
+
+
 class HistorialControlador:
+
     def __init__(self):
         self.modelo = HistorialModelo()
         self.vista = HistorialVista()
@@ -9,14 +28,12 @@ class HistorialControlador:
     def ejecutar(self):
         comandos = self.modelo.obtener_desde_fc()
         if comandos:
-            comandos = list(dict.fromkeys(comandos))  # Eliminar duplicados manteniendo el orden
-            self.vista.mostrar_comandos(comandos, "Comandos desde FC") #(comando fc -l -11)
+            comandos = eliminar_duplicados(comandos)
+            self.vista.mostrar_comandos(comandos, "Comandos desde FC")
         else:
             comandos = self.modelo.obtener_desde_archivo()
-            comandos = list(dict.fromkeys(comandos))  # Eliminar duplicados manteniendo el orden
-            self.vista.mostrar_comandos(comandos, "Comandos desde ARCHIVO .zsh_history")#(~/.zsh_history)
-    
-    
+            comandos = eliminar_duplicados(comandos)
+            self.vista.mostrar_comandos(comandos, "Comandos desde ARCHIVO")
 
 
 class HistorialControladorCompleto:
@@ -25,50 +42,51 @@ class HistorialControladorCompleto:
         self.vista = HistorialVistaCompleto()
 
     def ejecutar(self):
-
         comandos = self.modelo.obtener_todo_desde_fc()
         if comandos:
-            comandos = list(dict.fromkeys(comandos))  # Eliminar duplicados manteniendo el orden
-            self.vista.mostrar_comandos_completos(comandos, "Todo el historial desde FC") #(comando fc -l)
+            comandos = eliminar_duplicados(comandos)
+            self.vista.mostrar_comandos_completos(
+                comandos, "Todo el historial desde FC"
+            )
         else:
             comandos = self.modelo.obtener_todo_desde_archivo()
-            comandos = list(dict.fromkeys(comandos))  # Eliminar duplicados manteniendo el orden
-            self.vista.mostrar_comandos_completos(comandos, "Todo el historial desde ARCHIVO .zsh_history")#(~/.zsh_history)
-            
-            
-            
+            comandos = eliminar_duplicados(comandos)
+            self.vista.mostrar_comandos_completos(
+                comandos, "Todo el historial desde ARCHIVO"
+            )
+
+
 class MostrarComandos:
     def __init__(self):
         self.modelo = HistorialModelo()
         self.vista = HistorialVista()
-        
+
     def ejecutar(self):
         comandos = self.modelo.obtener_desde_fc()
         if comandos:
-            comandos = list(dict.fromkeys(comandos))
+            comandos = eliminar_duplicados(comandos)
             self.vista.mostrar_comandos(comandos, "Comandos desde FC")
-            return comandos  # <-- RETORNA los comandos
+            return comandos
         else:
             comandos = self.modelo.obtener_desde_archivo()
-            comandos = list(dict.fromkeys(comandos))
+            comandos = eliminar_duplicados(comandos)
             self.vista.mostrar_comandos(comandos, "Comandos desde ARCHIVO")
-            return comandos 
-        
-        
+            return comandos
+
+
 class MostrarComandosCompletos:
     def __init__(self):
         self.modelo = HistorialModeloCompleto()
         self.vista = HistorialVista()
-    
+
     def ejecutar(self):
         comandos = self.modelo.obtener_todo_desde_fc()
         if comandos:
-            comandos = list(dict.fromkeys(comandos))
-            self.vista.mostrar_comandos(comandos,"Comando Desde Archivo")
+            comandos = eliminar_duplicados(comandos)
+            self.vista.mostrar_comandos(comandos, "Comando Desde Archivo")
             return comandos
         else:
             comandos = self.modelo.obtener_todo_desde_archivo()
-            comandos = list(dict.fromkeys(comandos))
+            comandos = eliminar_duplicados(comandos)
             self.vista.mostrar_comandos(comandos, "Comandos Desde Archivo")
             return comandos
-                

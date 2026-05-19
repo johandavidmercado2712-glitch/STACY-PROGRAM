@@ -1,187 +1,161 @@
-import os
-import subprocess
-import platform
-import psutil
+import os  # interactuar con el sistema operativo
+import platform  # detectar el sistema operativo
+import subprocess  # ejecutar Comando de la terminal en python
+import psutil  # extraer informacion del procesos
+from datetime import datetime  # para la hora
 
-def _detectar_sistema():
-    return platform.system() #detecta que sistema operativo uso
 
-def _detectar_shell_windows():
-    """Detecta el shell por el nombre del proceso padre."""
+def detectar_sistema():
+    return platform.system()  # detexta si es windows o linux
+
+
+def detectar_shell_windows():
     try:
-        parent = psutil.Process(os.getppid()).name().lower()
-        
-        if 'powershell' in parent or 'pwsh' in parent:
-            return 'powershell'
-        elif 'cmd' in parent:
-            return 'cmd'
-        else:
-            # Verificar grandparent por si hay segundo nivel
-            try:
-                grandparent = psutil.Process(psutil.Process(os.getppid()).ppid()).name().lower()
-                if 'powershell' in grandparent or 'pwsh' in grandparent:
-                    return 'powershell'
-                elif 'cmd' in grandparent:
-                    return 'cmd'
-            except:
-                pass
-    except:
+        parent = (
+            psutil.Process(os.getppid()).name().lower()
+        )  # obtiene el id del proceso padre (en que terminal se ejecuta python), saca el nombre y y lo convierte en minuscula
+
+        if "powershell" in parent or "pwsh" in parent:
+            return "powershell"
+
+        if "cmd" in parent:
+            return "cmd"
+
+    except Exception:
         pass
-    
+
     return None
 
-def _obtener_historial_powershell(limite=None):
-    historial_path = os.path.join(
-        os.environ.get('APPDATA', ''),
-        'Microsoft', 'Windows', 'PowerShell', 'PSReadLine',
-        'ConsoleHost_history.txt'
+
+def obtener_historial_powershell(limite=None):
+    path = os.path.join(  # sirve para crear la rutas uniendodolas para la ruta definitiva  C:\Users\TuUsuario\AppData\Roaming\Microsoft\Windows\PowerShell\PSReadLine\ConsoleHost_history.txt
+        os.environ.get(
+            "APPDATA", ""
+        ),  # obtiene la ruta de tu carpeta C:\Users\TuUsuario\AppData\Roaming
+        "Microsoft",
+        "Windows",
+        "PowerShell",
+        "PSReadLine",
+        "ConsoleHost_history.txt",
     )
-    
-    if os.path.exists(historial_path):
-        try:
-            with open(historial_path, 'r', encoding='utf-8', errors='ignore') as f:
-                lineas = f.readlines()
-                if limite:
-                    lineas = lineas[-limite:]
-                return [linea.strip() for linea in lineas if linea.strip()]
-        except Exception:
-            return []
-    return []
 
+    if not os.path.exists(path):
+        return []  # si no existe trae una carpeta vacia
 
-def _obtener_historial_cmd(limite=None):
     try:
-         
-        result = subprocess.run(['doskey', '/history'], capture_output=True, text=True, shell=True)
-        comandos = result.stdout.splitlines() if result.stdout.strip() else []
-        if limite:
-            comandos = comandos[-limite:]
-        return comandos
+        with open(
+            path, encoding="utf-8", errors="ignore"
+        ) as f:  # para abrir el archivocon la ruta creada en path =
+            lines = [
+                x.strip() for x in f.readlines() if x.strip()
+            ]  # sirve para leer el archivo y organizarlos sin espacios ,saltos de linea y lineas vacias
+            return lines[-limite:] if limite else lines
+
+    except Exception:
+        return []  # arroja una lista vacia si no se llega a cumplir
+
+
+def obtener_historial_cmd(limite=None):
+    try:
+        result = subprocess.run(  # ejecuta el comando en la terminal para que obtener  los comandos
+            ["doskey", "/history"],  # son comandos en el cmd para extraer los comandos
+            capture_output=True,  # captura la salida al momento que se ejecute
+            text=True,  # que lo que extraiga sea text
+            shell=True,  # para comandos internos del cmd
+        )
+
+        comandos = (
+            result.stdout.splitlines()
+        )  # pasa de "dir\ncd Desktop" a ["dir", "cd Desktop"]
+
+        return (
+            comandos[-limite:] if limite else comandos
+        )  # si el limite es limite =11 entonces solo mostrara11 comandos
+
     except Exception:
         return []
 
-def _detectar_historial():
-    """Detecta el shell del usuario y devuelve la ruta del archivo de historial."""
-    shell_env = os.environ.get('SHELL', '').lower()
 
-    if 'zsh' in shell_env:
-        histfile = os.path.expanduser("~/.zsh_history")
-        if os.path.exists(histfile):
-            return 'zsh', histfile
+def obtener_historial(limite=None):
 
-    if 'bash' in shell_env:
-        histfile = os.path.expanduser("~/.bash_history")
-        if os.path.exists(histfile):
-            return 'bash', histfile
+    sistema = detectar_sistema()
 
-    # Fallback: verificar qué archivos existen
-    zsh_hist = os.path.expanduser("~/.zsh_history")
-    bash_hist = os.path.expanduser("~/.bash_history")
+    if sistema == "Windows":
+        # Intentar PowerShell primero
+        comandos = obtener_historial_powershell(limite)
+        if comandos:
+            return comandos
 
-    if os.path.exists(zsh_hist):
-        return 'zsh', zsh_hist
-    if os.path.exists(bash_hist):
-        return 'bash', bash_hist
+        # Si PowerShell no tiene nada, intentar CMD
+        comandos = obtener_historial_cmd(limite)
+        if comandos:
+            return comandos
 
-    return None, None
+        return []
+
+    else:
+
+        for archivo in ["~/.zsh_history", "~/.bash_history"]:
+
+            path = os.path.expanduser(
+                archivo
+            )  # convierte ~/.bash_history en /home/usuario/.bash_history
+
+            if os.path.exists(path):
+
+                with open(path, errors="ignore") as f:
+                    lines = [x.strip() for x in f.readlines() if x.strip()]
+                    return lines[-limite:] if limite else lines
+
+    return []
 
 
-def _parsear_comandos(lines, shell_type):
-    """Parsea las líneas del historial según el formato del shell."""
-    comandos = []
-    for line in lines:
-        line = line.strip()
-        if not line:
-            continue
-        if shell_type == 'zsh':
-            # Formato zsh: :timestamp:duration;comando
-            if ';' in line:
-                comandos.append(line.split(';', 1)[1].strip())
-        elif shell_type == 'bash':
-            # Formato bash: cada línea es directamente el comando
-            # (puede tener #timestamp en algunas configs, pero normalmente no)
-            if not line.startswith('#'):
-                comandos.append(line)
-    return comandos
+def extraer_ruta_del_comando(comando: str) -> str:
+    """Extrae la ruta del comando si es un cd."""
+    if comando.lower().startswith(
+        "cd "
+    ):  # convierte el comando en minusculas yverifica si el comando empieza por cd  para verificar si tiene ruta
+        ruta = comando[
+            3:
+        ].strip()  # se sacael comando y el del caracter 3 para adelante es  0=c 1=d 2=espacio 3=d   = cd destrock y strip elimina espacios
+        if ruta:
+            return ruta
+    return os.getcwd()  # obtiene la carpeta actual 
+
+
+def obtener_historial_con_metadata(limite=None):
+    """Retorna historial con comando, fecha y ruta."""
+    comandos = obtener_historial(limite)
+    resultado = []
+
+    for comando in comandos:
+        if comando:
+            resultado.append(
+                {
+                    "comando": comando,
+                    "fecha": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                    "ruta": extraer_ruta_del_comando(comando),
+                }
+            )
+
+    return resultado
 
 
 class HistorialModelo:
-    """Obtiene el historial de comandos del usuario (límite de 11)."""
-    
-    def _obtener_windows(self, limite=11):
-        """Método unificado para obtener historial en Windows."""
-        shell = _detectar_shell_windows()
-        
-        if shell == 'powershell':
-            return _obtener_historial_powershell(limite)
-        elif shell == 'cmd':
-            return _obtener_historial_cmd(limite)
-        else:
-            # Fallback: intentar PowerShell primero, luego CMD
-            comandos = _obtener_historial_powershell(limite)
-            if comandos:
-                return comandos
-            return _obtener_historial_cmd(limite)
-    
-    def obtener_desde_archivo(self):
-        sistema = _detectar_sistema()
-        
-        if sistema == "Windows":
-            return self._obtener_windows(limite=11)
-        else:
-            shell_type, histfile = _detectar_historial()
-            if histfile and os.path.exists(histfile):
-                with open(histfile, "r", errors="ignore") as f:
-                    lines = f.readlines()
-                    return _parsear_comandos(lines[-11:], shell_type)
-            return []
-    
-    def obtener_desde_fc(self):
-        sistema = _detectar_sistema()
-        
-        if sistema == "Windows":
-            return self._obtener_windows(limite=11)
-        else:
-            result = subprocess.run(['fc', '-l', '-11'], capture_output=True, text=True, shell=True)
-            return result.stdout.splitlines() if result.stdout.strip() else []
+    """Obtiene el historial de comandos (últimos 11)."""
 
+    def obtener_desde_fc(self):
+        return obtener_historial_con_metadata(limite=11)
+
+    def obtener_desde_archivo(self):
+        return obtener_historial_con_metadata(limite=11)
 
 
 class HistorialModeloCompleto:
-    """Obtiene todo el historial de comandos sin límites."""
-    
-    def _obtener_windows_completo(self):
-        """Método unificado para obtener historial completo en Windows."""
-        shell = _detectar_shell_windows()
-        
-        if shell == 'powershell':
-            return _obtener_historial_powershell()
-        elif shell == 'cmd':
-            return _obtener_historial_cmd()
-        else:
-            comandos = _obtener_historial_powershell()
-            if comandos:
-                return comandos
-            return _obtener_historial_cmd()
-    
-    def obtener_todo_desde_archivo(self):
-        sistema = _detectar_sistema()
-        
-        if sistema == "Windows":
-            return self._obtener_windows_completo()
-        else:
-            result = subprocess.run(['fc', '-l'], capture_output=True, text=True, shell=True)
-            return result.stdout.splitlines() if result.stdout.strip() else []
-    
+    """Obtiene todo el historial de comandos."""
+
     def obtener_todo_desde_fc(self):
-        sistema = _detectar_sistema()
-        
-        if sistema == "Windows":
-            return self._obtener_windows_completo()
-        else:
-            shell_type, histfile = _detectar_historial()
-            if histfile and os.path.exists(histfile):
-                with open(histfile, "r", errors="ignore") as f:
-                    lines = f.readlines()
-                    return _parsear_comandos(lines, shell_type)
-            return []
+        return obtener_historial_con_metadata()
+
+    def obtener_todo_desde_archivo(self):
+        return obtener_historial_con_metadata()
