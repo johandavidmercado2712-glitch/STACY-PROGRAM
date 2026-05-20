@@ -24,9 +24,7 @@ def guardar_en_bd(comandos):
     """Guarda todos los comandos en la BD."""
     for cmd_info in comandos:
         if isinstance(cmd_info, dict):
-            guardar_comando(
-                cmd_info["comando"], cmd_info["ruta"], cmd_info["fecha"]
-            )
+            guardar_comando(cmd_info["comando"], cmd_info["ruta"])
 
 
 class HistorialControlador:

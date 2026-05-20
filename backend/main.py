@@ -4,6 +4,8 @@ from app.controllers.historial_controller import (
     HistorialControlador,
     HistorialControladorCompleto,
 )
+from config.db import DB_CONFIG
+from mysql.connector import connect, Error
 
 app = FastAPI(title="Historial de Comandos API", version="1.0.0")
 
@@ -51,8 +53,35 @@ def obtener_todos_comandos():
         return JSONResponse(
             status_code=500, content={"estado": "error", "mensaje": str(e)}
         )
+        
+        
+@app.get("/historial/comandos/{com_nombre}")
+def buscar_comando_nombre(com_nombre:str):
+    try:
+        conexion = connect(**DB_CONFIG)
+        cursor = conexion.cursor(dictionary=True)
+        cursor.execute(
+            "SELECT * FROM comandos WHERE COM_NOMBRE= %s ORDER BY COM_ID DESC", (com_nombre,),
+        )
 
-
+        comandos = cursor.fetchall()
+        cursor.close()
+        conexion.close()
+        if not comandos:
+            return JSONResponse(
+                status_code=404,
+                content={"Estado": "Error", "Mensaje": "No Se Encontro El Comando"},
+            )
+        return{
+            "Estado": "Exitoso",
+            "Total": len(comandos),
+            "comandos": comandos,
+        }
+    except Error as e:
+        return JSONResponse(
+            status_code=500, content={"Estado":"Error", "Mensaje": str(e)}
+        )
+        
 if __name__ == "__main__":
     import uvicorn
 

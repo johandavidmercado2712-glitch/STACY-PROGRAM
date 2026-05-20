@@ -1,5 +1,4 @@
 import os 
-from datetime import datetime
 from mysql.connector import connect, Error
 from dotenv import load_dotenv
 
@@ -34,11 +33,8 @@ def crear_tabla():
         print(f"Error al crear tabla: {e}")
 
 
-def guardar_comando(comando: str, ruta: str, fecha: str = None):
-    """Guarda un comando en la base de datos."""
-    if fecha is None:
-        fecha = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
+def guardar_comando(comando: str, ruta: str):
+    """Guarda un comando en la base de datos usando fecha de MySQL."""
     try:
         conexion = connect(**DB_CONFIG)
         cursor = conexion.cursor()
@@ -46,9 +42,9 @@ def guardar_comando(comando: str, ruta: str, fecha: str = None):
         cursor.execute(
             """
             INSERT INTO comandos (COM_NOMBRE, COM_FECHA, COM_RUTA)
-            VALUES (%s, %s, %s)
+            VALUES (%s, NOW(), %s)
             """,
-            (comando, fecha, ruta),
+            (comando, ruta),
         )
 
         conexion.commit()
