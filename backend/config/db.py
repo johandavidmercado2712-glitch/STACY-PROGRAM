@@ -1,4 +1,4 @@
-import os
+import os 
 from datetime import datetime
 from mysql.connector import connect, Error
 from dotenv import load_dotenv
@@ -6,11 +6,11 @@ from dotenv import load_dotenv
 load_dotenv()
 
 DB_CONFIG = {
-    "user": os.getenv("DB_USER", "root"),
-    "password": os.getenv("DB_PASSWORD", ""),
-    "host": os.getenv("DB_HOST", "172.30.48.1"),
-    "database": os.getenv("DB_NAME", "proyecto_gwen"),
-    "port": os.getenv("DB_PORT", "3307"),
+    "user": os.getenv("DB_USER"),
+    "password": os.getenv("DB_PASSWORD"),
+    "host": os.getenv("DB_HOST"),
+    "database": os.getenv("DB_NAME"),
+    "port": os.getenv("DB_PORT"),
 }
 
 

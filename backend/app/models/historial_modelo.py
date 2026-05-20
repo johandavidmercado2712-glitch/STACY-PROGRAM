@@ -105,9 +105,20 @@ def obtener_historial(limite=None):
 
                 with open(path, errors="ignore") as f:
                     lines = [x.strip() for x in f.readlines() if x.strip()]
+                    # Si es zsh, limpiar prefijo ': <timestamp>:<duracion>;'
+                    if path.endswith(".zsh_history"):
+                        lines = [limpiar_comando_zsh(x) for x in lines]
                     return lines[-limite:] if limite else lines
 
     return []
+def limpiar_comando_zsh(linea: str) -> str: #sirve para quitar en la base de datos el tiempo de respuesta
+    if not linea:
+        return linea
+    if linea.startswith(": "):
+        separador = linea.find(";")
+        if separador != -1 and separador + 1 < len(linea):
+            return linea[separador + 1 :].strip()
+    return linea.strip()
 
 
 def extraer_ruta_del_comando(comando: str) -> str:
