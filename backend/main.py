@@ -1,17 +1,28 @@
 from fastapi import FastAPI
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse #para mandar respuestas en formato JSON
 from app.controllers.historial_controller import (
     HistorialControlador,
     HistorialControladorCompleto,
 )
-from config.db import DB_CONFIG
-from mysql.connector import connect, Error
+from config.db import DB_CONFIG #tra la configuracion de la base de datos
+from mysql.connector import connect, Error #extrae las herramientas de mysql
+from fastapi.middleware.cors import CORSMiddleware
 
-app = FastAPI(title="Historial de Comandos API", version="1.0.0")
+app = FastAPI(title="Historial de Comandos API", version="1.0.0") #encargado de manejar todas las rutas 
 
+origins =[
+    "http://localhost:8000"
+]
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 @app.get("/")
-def read_root():
+def principal():
     return {"mensaje": "API de Historial de Comandos"}
 
 
