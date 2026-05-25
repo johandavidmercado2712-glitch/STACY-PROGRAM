@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>STACY - Historial de Comandos</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="layout">
+    <header class="hero">
+      <p class="eyebrow">STACY PROGRAM</p>
+      <h1>Historial de Comandos</h1>
+      <p class="subtitle">Vista base para revisar actividad por usuario.</p>
+    </header>
+
+    <section class="route-board" aria-label="Rutas disponibles">
+      <article id="route-main" class="route-card active-route">
+        <span class="method">GET</span>
+        <code>/historial/ultimos</code>
+      </article>
+      <article id="route-all" class="route-card">
+        <span class="method">GET</span>
+        <code>/historial/todos</code>
+      </article>
+    </section>
+
+    <nav class="tabs" aria-label="Vistas de historial">
+      <button id="tab-main" class="tab active" type="button">Vista principal</button>
+      <button id="tab-all" class="tab" type="button">Ver todo</button>
+    </nav>
+
+    <section class="panel">
+      <div class="panel-header">
+        <h2 id="panel-title">Ultimos comandos</h2>
+        <span id="active-endpoint" class="endpoint-label">/historial/ultimos</span>
+        <button id="refresh-btn" type="button">Actualizar</button>
+      </div>
+
+      <p id="status-message" class="subtitle">Cargando comandos...</p>
+      <ul id="command-list" class="command-list"></ul>
+    </section>
+  </main>
+
+  <script>
+    const API_BASE = "http://localhost:8000";
+    const ENDPOINTS = {
+      main: `${API_BASE}/historial/ultimos`,
+      all: `${API_BASE}/historial/todos`,
+    };
+
+    const refreshBtn = document.getElementById("refresh-btn");
+    const commandList = document.getElementById("command-list");
+    const statusMessage = document.getElementById("status-message");
+    const panelTitle = document.getElementById("panel-title");
+    const activeEndpoint = document.getElementById("active-endpoint");
+    const tabMain = document.getElementById("tab-main");
+    const tabAll = document.getElementById("tab-all");
+    const routeMain = document.getElementById("route-main");
+    const routeAll = document.getElementById("route-all");
+
+    let vistaActual = "main";
+
+    function formatearHora(fechaTexto) {
+      if (!fechaTexto) return "--:--";
+      const fecha = new Date(fechaTexto.replace(" ", "T"));
+      if (Number.isNaN(fecha.getTime())) return "--:--";
+      return fecha.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" });
+    }
+
+    function crearItemComando(item) {
+      const li = document.createElement("li");
+
+      const time = document.createElement("span");
+      time.className = "time";
+      time.textContent = formatearHora(item.fecha);
+
+      const code = document.createElement("code");
+      code.textContent = item.comando || "(sin comando)";
+
+      const path = document.createElement("span");
+      path.className = "path";
+      path.textContent = item.ruta || "(sin ruta)";
+
+      li.appendChild(time);
+      li.appendChild(code);
+      li.appendChild(path);
+      return li;
+    }
+
+    function renderComandos(comandos) {
+      commandList.innerHTML = "";
+
+      if (!Array.isArray(comandos) || comandos.length === 0) {
+        statusMessage.textContent = "Sin comandos disponibles.";
+        return;
+      }
+
+      statusMessage.textContent = "";
+      comandos.forEach((item) => {
+        commandList.appendChild(crearItemComando(item));
+      });
+    }
+
+    function aplicarVista(vista) {
+      vistaActual = vista;
+      tabMain.classList.toggle("active", vista === "main");
+      tabAll.classList.toggle("active", vista === "all");
+      routeMain.classList.toggle("active-route", vista === "main");
+      routeAll.classList.toggle("active-route", vista === "all");
+      panelTitle.textContent = vista === "main" ? "Ultimos comandos" : "Todo el historial";
+      activeEndpoint.textContent = vista === "main" ? "/historial/ultimos" : "/historial/todos";
+    }
+
+    async function cargarComandos() {
+      statusMessage.textContent = "Cargando comandos...";
+      statusMessage.classList.remove("error");
+      refreshBtn.disabled = true;
+
+      try {
+        const respuesta = await fetch(ENDPOINTS[vistaActual]);
+        if (!respuesta.ok) {
+          throw new Error("Respuesta invalida del servidor");
+        }
+
+        const data = await respuesta.json();
+        renderComandos(data.comandos || []);
+      } catch (error) {
+        commandList.innerHTML = "";
+        statusMessage.textContent = "No se pudo conectar al backend.";
+        statusMessage.classList.add("error");
+      } finally {
+        refreshBtn.disabled = false;
+      }
+    }
+
+    refreshBtn.addEventListener("click", cargarComandos);
+    tabMain.addEventListener("click", () => {
+      aplicarVista("main");
+      cargarComandos();
+    });
+    tabAll.addEventListener("click", () => {
+      aplicarVista("all");
+      cargarComandos();
+    });
+    window.addEventListener("DOMContentLoaded", cargarComandos);
+  </script>
+</body>
+</html>

@@ -1,18 +1,31 @@
-from fastapi import FastAPI
-from fastapi.responses import JSONResponse #para mandar respuestas en formato JSON
+from fastapi import Depends, FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse  # para mandar respuestas en formato JSON
+from typing_extensions import Annotated
+
 from app.controllers.historial_controller import (
     HistorialControlador,
     HistorialControladorCompleto,
 )
-from config.db import DB_CONFIG #tra la configuracion de la base de datos
-from mysql.connector import connect, Error #extrae las herramientas de mysql
-from fastapi.middleware.cors import CORSMiddleware
+from auth.auth import get_current_user
+from auth.auth import router as auth_router
+from config.db import DB_CONFIG  # tra la configuracion de la base de datos
+from mysql.connector import Error, connect  # extrae las herramientas de mysql
 
 app = FastAPI(title="Historial de Comandos API", version="1.0.0") #encargado de manejar todas las rutas 
-
+app.include_router(auth_router)
 origins =[
-    "http://localhost:8000"
+    "http://localhost:8000",
+    "http://localhost:5000",
+    "http://localhost:5500",
+    "http://127.0.0.1:5500"
+    
 ]
+
+@app.get("/users/profile")
+def profile(my_user: Annotated[dict, Depends(get_current_user)]):
+    return my_user
+
 
 app.add_middleware(
     CORSMiddleware,
