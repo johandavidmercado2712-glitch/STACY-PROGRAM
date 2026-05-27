@@ -3,16 +3,15 @@ from typing_extensions import Annotated
 import jwt
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm #sabe como extraer el token del usuario ,  sabe como recibir el formulario de username y password
-
+from config.usuarioDB import obtener_usuario_por_username
 SECRET_KEY = "stacy"
 ALGORITHM = "HS256"
 
 router = APIRouter()
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/token")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/token") #sabe com extraer el token del header
 
-users = {
-    "jason": {"username": "pablo", "email": "pablo@red.com", "password": "string"}
-}
+
+
 
 
 def create_access_token(payload: dict) -> str:
@@ -36,10 +35,9 @@ def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]) -> dict:
 
 @router.post("/token")
 def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
-    user = users.get(form_data.username)
+    user = obtener_usuario_por_username(form_data.username)
 
-    if not user or form_data.password != user["password"]:
-        raise HTTPException(status_code=400, detail="Usuario o contrasena incorrecta")
-
-    token = create_access_token({"username": user["username"], "email": user["email"]})
-    return {"access_token": token, "token_type": "bearer"}
+    if not user:
+        raise HTTPException(status_code=401, detail="Credenciales Invalidas")
+    if user["USU_ACTIVO"] !=1:
+        raise HTTPException(status_code=403, detail="Usuario inactivo")
