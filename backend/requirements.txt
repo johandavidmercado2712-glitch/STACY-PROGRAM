@@ -1,5 +1,7 @@
 fastapi
-uvicorn 
+uvicorn
 psutil
 mysql-connector-python
 python-dotenv
+PyJWT
+typing_extensions
