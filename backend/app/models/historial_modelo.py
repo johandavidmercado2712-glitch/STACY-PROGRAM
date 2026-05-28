@@ -99,7 +99,7 @@ def obtener_historial(limite=None):
 
             path = os.path.expanduser(
                 archivo
-            )  # convierte ~/.bash_history en /home/usuario/.bash_history
+            )  # convierte ~/.bash_history en /home/usuario/.bash_history 
 
             if os.path.exists(path):
 
@@ -114,9 +114,9 @@ def obtener_historial(limite=None):
 def limpiar_comando_zsh(linea: str) -> str: #sirve para quitar en la base de datos el tiempo de respuesta
     if not linea:
         return linea
-    if linea.startswith(": "):
-        separador = linea.find(";")
-        if separador != -1 and separador + 1 < len(linea):
+    if linea.startswith(": "):#verificar si empieza con  ":"
+        separador = linea.find(";") #el ; es el que separa la fecha con la hora 
+        if separador != -1 and separador + 1 < len(linea): 
             return linea[separador + 1 :].strip()
     return linea.strip()
 

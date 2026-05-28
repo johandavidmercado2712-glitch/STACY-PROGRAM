@@ -9,10 +9,10 @@ def eliminar_duplicados(comandos):
     resultado = []
 
     for cmd_info in comandos:
-        if isinstance(cmd_info, dict):
-            if cmd_info["comando"] not in vistos:
-                vistos.add(cmd_info["comando"])
-                resultado.append(cmd_info)
+        if isinstance(cmd_info, dict): #isintance es utilizado para validar si la iformacion dentro de () es de una clase especifica o un tipo de dato ejemplo cmd_info = dict
+            if cmd_info["comando"] not in vistos: #verifica si el comando fue visto antes 
+                vistos.add(cmd_info["comando"]) #el add anade en los set .se anade dependiendo el orden - lo marca como leido 
+                resultado.append(cmd_info)# anade el elemeno al final de la list - lo agrega al resultado  
         else:
             if cmd_info not in vistos:
                 vistos.add(cmd_info)
@@ -67,43 +67,3 @@ class HistorialControladorCompleto:
             self.vista.mostrar_comandos_completos(
                 comandos, "Todo el historial desde ARCHIVO"
             )
-
-
-class MostrarComandos:
-    def __init__(self):
-        self.modelo = HistorialModelo()
-        self.vista = HistorialVista()
-
-    def ejecutar(self):
-        comandos = self.modelo.obtener_desde_fc()
-        if comandos:
-            comandos = eliminar_duplicados(comandos)
-            guardar_en_bd(comandos)
-            self.vista.mostrar_comandos(comandos, "Comandos desde FC")
-            return comandos
-        else:
-            comandos = self.modelo.obtener_desde_archivo()
-            comandos = eliminar_duplicados(comandos)
-            guardar_en_bd(comandos)
-            self.vista.mostrar_comandos(comandos, "Comandos desde ARCHIVO")
-            return comandos
-
-
-class MostrarComandosCompletos:
-    def __init__(self):
-        self.modelo = HistorialModeloCompleto()
-        self.vista = HistorialVista()
-
-    def ejecutar(self):
-        comandos = self.modelo.obtener_todo_desde_fc()
-        if comandos:
-            comandos = eliminar_duplicados(comandos)
-            guardar_en_bd(comandos)
-            self.vista.mostrar_comandos(comandos, "Comando Desde Archivo")
-            return comandos
-        else:
-            comandos = self.modelo.obtener_todo_desde_archivo()
-            comandos = eliminar_duplicados(comandos)
-            guardar_en_bd(comandos)
-            self.vista.mostrar_comandos(comandos, "Comandos Desde Archivo")
-            return comandos

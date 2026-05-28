@@ -1,5 +1,6 @@
 from mysql.connector import Error, connect
 
+
 from config.db import DB_CONFIG
 
 
