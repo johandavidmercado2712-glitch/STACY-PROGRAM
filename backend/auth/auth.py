@@ -1,48 +1,62 @@
-from datetime import datetime, timedelta
-from typing_extensions import Annotated
-import jwt
+from datetime import datetime, timedelta #enfocado en la hora y usarlo para calcular  la expiracion del token 
+from typing_extensions import Annotated #para anotar  el tip de parametros de funciones como Depends
+from urllib.parse import urlencode#conviete un un diccionario en un para metro de URL ejemplo {"a":1} == "a=1"
+import jwt #crear y verificar token 
+import os # ver y interactuar con los valores que estan en la variable de entorno .env
+import httpx #para hacer peticiones a google. en pocas palabras un request
+from uuid import uuid4 # para generar id unicos aleatorios 
+from dotenv import load_dotenv #para cargar y leer las vriables de entorno 
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi.responses import RedirectResponse #para el flujo de google y redirigir a los usuarios a otra url 
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-from pydantic import BaseModel
+from pydantic import BaseModel # para validar y estructurar los datos 
 from config.usuarioDB import obtener_usuario_por_username, guardar_usuario, crear_tabla_usuarios
 from auth.hashing import hash_password, verify_password
-SECRET_KEY = "stacy"
-ALGORITHM = "HS256"
+
+load_dotenv()
+
+SECRET_KEY = os.getenv("SECRET_KEY")
+ALGORITHM = os.getenv("ALGORITHM")
+GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
+GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
+GOOGLE_REDIRECT_URI = os.getenv("GOOGLE_REDIRECT_URI")
+FRONTEND_URL = os.getenv("FRONTEND_URL", "http://127.0.0.1:5500")
+AUTHORIZATION_URL = "https://accounts.google.com/o/oauth2/v2/auth" #la vista donde esta el login de google
+TOKEN_URL = "https://oauth2.googleapis.com/token" #donde el servidor cangea el codigo
+USERINFO_URL = "https://www.googleapis.com/oauth2/v2/userinfo" #donde obtienes el email y el nombre del usuario 
+
 
 router = APIRouter()
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/token") #sabe com extraer el token del header
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/token")#define como extraer cada peticion
 
 
+def create_access_token(payload: dict) -> str: #hace una copia del token . le anade la fecha y la firma 
+    data = payload.copy() #se hace una copia no se afecta al original
+    data["exp"] = datetime.utcnow() + timedelta(hours=1) #se anade la fecha
+    return jwt.encode(data, SECRET_KEY, algorithm=ALGORITHM) # crea el token con esos 3 datos y la firma que es privada
 
 
-
-def create_access_token(payload: dict) -> str:
-    data = payload.copy()
-    data["exp"] = datetime.utcnow() + timedelta(hours=1)
-    return jwt.encode(data, SECRET_KEY, algorithm=ALGORITHM)
-
-
-def decode_token(token: str) -> dict:
+def decode_token(token: str) -> dict: #verific y dcodifica un token si expiro o es invaido, lanza un error
     try:
-        return jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        return jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM]) 
     except jwt.ExpiredSignatureError:
         raise HTTPException(status_code=401, detail="El token ha expirado")
     except jwt.InvalidTokenError:
         raise HTTPException(status_code=401, detail="Token invalido")
 
 
-def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]) -> dict:
+def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]) -> dict:#Extrae el token del header y devuelve los datos del usuario. 
     return decode_token(token)
 
 
-class RegisterRequest(BaseModel):
+class RegisterRequest(BaseModel):# define la  estructura del body esperado en /register. pydantic valida automaicamente los tipos 
     username: str
     apellidos: str
     correo: str
     password: str
 
 
-@router.post("/register")
+@router.post("/register") #verifica que exitse el usuario , crea la tabla si no existe , hashea la contrasena , guarda el usuario en la base de datos 
 def register(data: RegisterRequest):
     user = obtener_usuario_por_username(data.username)
     if user:
@@ -55,10 +69,9 @@ def register(data: RegisterRequest):
     return {"mensaje": "Usuario registrado exitosamente"}
 
 
-@router.post("/token")
+@router.post("/token")#busca el usuario en la BD , verifica la contrasena con el hash, verifica que el usuario este activo, genera y devueve el JTW
 def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
     user = obtener_usuario_por_username(form_data.username)
-    
     if not user:
         raise HTTPException(status_code=401, detail="Credenciales Invalidas")
     if not verify_password(form_data.password, user["USU_PASSWORD_HASH"]):
@@ -67,3 +80,52 @@ def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
         raise HTTPException(status_code=403, detail="Usuario inactivo")
     token = create_access_token({"sub": user["USU_USERNAME"]})
     return {"access_token": token, "token_type": "bearer"}
+
+
+@router.get("/auth/google/login") #Contruye la URL de google con los parametros necesarios y redirige al para que inicie session alli
+def google_login():
+    params = {
+        "client_id": GOOGLE_CLIENT_ID, #el id con el cual google te reconoce
+        "redirect_uri": GOOGLE_REDIRECT_URI, #donde google mandara al usuario despues del login
+        "response_type": "code", #pide un codigo temporal de autorizacion 
+        "scope": "openid email profile", #la informacion que le pides al usuario 
+        "access_type": "online", #no necesitas acceso offline (sin refresh tokens)
+    }
+    url = f"{AUTHORIZATION_URL}?{urlencode(params)}"
+    return RedirectResponse(url)
+
+
+@router.get("/auth/google/callback")
+def google_callback(code: str):#Google llama a esta URL automáticamente con un code temporal en la query string
+    with httpx.Client() as client:# Canjea el code por tokens reales de Google (access_token, id_token, etc.).
+        resp = client.post(TOKEN_URL, data={
+            "code": code,
+            "client_id": GOOGLE_CLIENT_ID,
+            "client_secret": GOOGLE_CLIENT_SECRET,
+            "redirect_uri": GOOGLE_REDIRECT_URI,
+            "grant_type": "authorization_code",
+        })
+        tokens = resp.json()
+
+    if "error" in tokens:
+        raise HTTPException(status_code=400, detail=tokens.get("error_description", "Error al autenticar con Google"))
+
+    headers = {"Authorization": f"Bearer {tokens['access_token']}"} #sa el token de Google para obtener el email y nombre del usuario.
+    with httpx.Client() as client:
+        resp = client.get(USERINFO_URL, headers=headers)
+        user_info = resp.json()
+
+    google_email = user_info["email"] #Si el usuario de Google no existe en la BD, lo crea con una contraseña aleatoria (no la necesita porque usa Google para entrar).
+    google_name = user_info.get("name", google_email.split("@")[0])
+
+    user = obtener_usuario_por_username(google_email)
+    if not user:
+        crear_tabla_usuarios()
+        password_placeholder = hash_password(str(uuid4()))
+        guardar_usuario(google_email, "", google_email, password_placeholder)
+        user = obtener_usuario_por_username(google_email)
+
+    token = create_access_token({"sub": user["USU_USERNAME"]})
+    redirect_url = f"{FRONTEND_URL}?token={token}&user={user['USU_USERNAME']}"
+    return RedirectResponse(redirect_url)# Genera el token JWT propio de la app y redirige al frontend con el token en la URL para que lo guarde.
+
