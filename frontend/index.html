@@ -4,380 +4,182 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>STACY - Historial de Comandos</title>
+  <script>
+    (function () {
+      var saved = localStorage.getItem("stacy_theme");
+      var prefers = window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+      document.documentElement.setAttribute("data-theme", saved || prefers);
+    })();
+  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
+
+  <!-- ═══ NAVBAR ═══ -->
+  <nav class="navbar" id="navbar">
+    <div class="navbar-brand">
+      <span class="navbar-logo">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+        STACY
+      </span>
+    </div>
+    <div class="navbar-user" id="navbar-user">
+      <span class="user-label" id="user-label"></span>
+      <button id="theme-toggle" type="button" class="btn-navbar btn-icon-navbar" title="Cambiar tema"></button>
+      <button id="copy-token-btn" type="button" class="btn-navbar">Copiar Token</button>
+      <button id="logout-btn" type="button" class="btn-navbar btn-outline">Cerrar sesion</button>
+    </div>
+  </nav>
+
   <main class="layout">
 
     <!-- ═══ AUTH: LOGIN / REGISTER ═══ -->
     <div class="auth-wrapper" id="auth-wrapper">
+      <div class="auth-bg-decoration"></div>
       <section class="auth-card">
-        <div class="hero">
-          <p class="eyebrow">STACY PROGRAM</p>
-          <h1>Historial de Comandos</h1>
-          <p class="subtitle">Inicia sesion para continuar</p>
+        <div class="auth-card-header">
+          <div class="auth-logo">
+            <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+          </div>
+          <h1>STACY</h1>
+          <p class="auth-tagline">Historial de Comandos</p>
         </div>
 
-        <div class="auth-tabs">
-          <button id="auth-tab-login" class="auth-tab active" type="button">Iniciar sesion</button>
-          <button id="auth-tab-register" class="auth-tab" type="button">Registrarse</button>
+        <div class="auth-body">
+          <div class="auth-tabs">
+            <button id="auth-tab-login" class="auth-tab active" type="button">Iniciar sesion</button>
+            <button id="auth-tab-register" class="auth-tab" type="button">Registrarse</button>
+          </div>
+
+          <form id="login-form" class="auth-form">
+            <div class="input-group">
+              <svg class="input-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              <input type="text" id="login-username" placeholder="Usuario" required />
+            </div>
+            <div class="input-group">
+              <svg class="input-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              <input type="password" id="login-password" placeholder="Contrasena" required />
+            </div>
+            <button type="submit">Ingresar</button>
+          </form>
+
+          <form id="register-form" class="auth-form" style="display:none">
+            <div class="input-group">
+              <svg class="input-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              <input type="text" id="reg-username" placeholder="Usuario" required />
+            </div>
+            <div class="input-group">
+              <svg class="input-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              <input type="text" id="reg-apellidos" placeholder="Apellidos" required />
+            </div>
+            <div class="input-group">
+              <svg class="input-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+              <input type="email" id="reg-correo" placeholder="Correo" required />
+            </div>
+            <div class="input-group">
+              <svg class="input-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              <input type="password" id="reg-password" placeholder="Contrasena" required />
+            </div>
+            <button type="submit">Registrarse</button>
+          </form>
+
+          <div class="auth-divider">
+            <span>o continua con</span>
+          </div>
+
+          <button id="google-login-btn" class="btn-google" type="button">
+            <svg viewBox="0 0 24 24" width="18" height="18">
+              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/>
+              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+            </svg>
+            <span>Continuar con Google</span>
+          </button>
+
+          <div id="auth-message" class="auth-message"></div>
         </div>
-
-        <form id="login-form" class="auth-form">
-          <input type="text" id="login-username" placeholder="Usuario" required />
-          <input type="password" id="login-password" placeholder="Contrasena" required />
-          <button type="submit">Ingresar</button>
-        </form>
-
-        <form id="register-form" class="auth-form" style="display:none">
-          <input type="text" id="reg-username" placeholder="Usuario" required />
-          <input type="text" id="reg-apellidos" placeholder="Apellidos" required />
-          <input type="email" id="reg-correo" placeholder="Correo" required />
-          <input type="password" id="reg-password" placeholder="Contrasena" required />
-          <button type="submit">Registrarse</button>
-        </form>
-
-        <div class="auth-divider">
-          <span>o continua con</span>
-        </div>
-
-        <button id="google-login-btn" class="btn-google" type="button">
-          <svg viewBox="0 0 48 48" width="20" height="20">
-            <path fill="#FFC107" d="M43.6 24.5c0-1.6-.2-3.2-.5-4.7H24v8.9h11a10.7 10.7 0 0 1-4.7 7l7.6 5.9c4.4-4 7-10 7-17.1z"/>
-            <path fill="#4CAF50" d="M24 44c6.3 0 11.6-2.1 15.5-5.7l-7.6-5.9c-2.1 1.4-4.8 2.3-7.9 2.3-6 0-11.2-4-13-9.5l-7.9 6C7.8 38 15.4 44 24 44z"/>
-            <path fill="#1976D2" d="M11 25.2c-.5-1.5-.8-3.1-.8-4.7s.3-3.2.8-4.7l-7.9-6A23.5 23.5 0 0 0 .5 20.5c0 4 1 7.8 2.6 11.2l7.9-6.5z"/>
-            <path fill="#F44336" d="M24 9.5c3.4 0 6.5 1.2 8.9 3.5l6.7-6.7C35.5 3 30 0 24 0 15.4 0 7.8 6 3.1 14.5l7.9 6c1.8-5.5 7-9.5 13-9.5z"/>
-          </svg>
-          Google
-        </button>
-
-        <div id="auth-message" class="auth-message"></div>
       </section>
     </div>
 
-    <!-- ═══ DASHBOARD: HISTORIAL ═══ -->
+    <!-- ═══ DASHBOARD ═══ -->
     <div class="dashboard" id="dashboard">
+      <div class="dashboard-content">
 
-      <section id="user-info" class="user-info">
-        <span class="user-label" id="user-label"></span>
-        <div class="user-actions">
-          <button id="copy-token-btn" type="button">Copiar Token</button>
-          <button id="logout-btn" class="btn-outline" type="button">Cerrar sesion</button>
+        <aside class="sidebar" id="sidebar">
+          <div class="sidebar-header">
+            <h3>Carpetas</h3>
+            <button id="add-folder-btn" class="btn-icon" title="Nueva carpeta" type="button">+</button>
+          </div>
+
+          <ul class="folder-list" id="folder-list">
+            <li class="folder-item active" data-folder-id="all">
+              <div class="folder-info">
+                <span class="folder-name">Todos los comandos</span>
+              </div>
+              <span class="folder-count" id="count-all">0</span>
+            </li>
+            <li class="folder-item" data-folder-id="uncategorized">
+              <div class="folder-info">
+                <span class="folder-name">Sin carpeta</span>
+              </div>
+              <span class="folder-count" id="count-uncategorized">0</span>
+            </li>
+          </ul>
+
+        </aside>
+
+         <div class="main-content">
+          <div class="toolbar">
+            <div class="search-bar">
+              <input type="text" id="search-input" placeholder="Filtrar comandos..." />
+            </div>
+            <div class="toolbar-actions">
+              <div class="view-toggle toolbar-toggle">
+                <button id="view-recent" class="view-btn" type="button">Ultimos 11</button>
+                <button id="view-all" class="view-btn active" type="button">Todos</button>
+              </div>
+              <button id="refresh-btn" class="btn-toolbar" type="button">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+                Actualizar
+              </button>
+            </div>
+          </div>
+
+          <section class="panel">
+            <div class="panel-header">
+              <h2 id="panel-title">Todos los comandos</h2>
+              <span id="folder-badge" class="folder-badge" style="display:none"></span>
+            </div>
+
+            <p id="status-message" class="status-message">Cargando comandos...</p>
+            <ul id="command-list" class="command-list"></ul>
+          </section>
         </div>
-      </section>
 
-      <section class="route-board" aria-label="Rutas disponibles">
-        <article id="route-main" class="route-card active-route">
-          <span class="method">GET</span>
-          <code>/historial/ultimos</code>
-        </article>
-        <article id="route-all" class="route-card">
-          <span class="method">GET</span>
-          <code>/historial/todos</code>
-        </article>
-      </section>
-
-      <nav class="tabs" aria-label="Vistas de historial">
-        <button id="tab-main" class="tab active" type="button">Vista principal</button>
-        <button id="tab-all" class="tab" type="button">Ver todo</button>
-      </nav>
-
-      <div class="search-bar">
-        <input type="text" id="search-input" placeholder="Filtrar comandos..." />
       </div>
-
-      <section class="panel">
-        <div class="panel-header">
-          <h2 id="panel-title">Ultimos comandos</h2>
-          <span id="active-endpoint" class="endpoint-label">/historial/ultimos</span>
-          <button id="refresh-btn" type="button">Actualizar</button>
-        </div>
-
-        <p id="status-message" class="status-message">Cargando comandos...</p>
-        <ul id="command-list" class="command-list"></ul>
-      </section>
     </div>
 
   </main>
 
-  <script>
-    const API_BASE = "http://localhost:8000";
-    const ENDPOINTS = {
-      main: `${API_BASE}/historial/ultimos`,
-      all: `${API_BASE}/historial/todos`,
-    };
+  <!-- ═══ MODAL ═══ -->
+  <div class="modal-overlay" id="modal-overlay" style="display:none">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modal-title"></h3>
+        <button class="modal-close" id="modal-close">&times;</button>
+      </div>
+      <div class="modal-body" id="modal-body"></div>
+      <div class="modal-footer">
+        <button class="btn-sm btn-outline" id="modal-cancel">Cancelar</button>
+        <button class="btn-sm" id="modal-save">Guardar</button>
+      </div>
+    </div>
+  </div>
 
-    const refreshBtn = document.getElementById("refresh-btn");
-    const commandList = document.getElementById("command-list");
-    const statusMessage = document.getElementById("status-message");
-    const panelTitle = document.getElementById("panel-title");
-    const activeEndpoint = document.getElementById("active-endpoint");
-    const tabMain = document.getElementById("tab-main");
-    const tabAll = document.getElementById("tab-all");
-    const routeMain = document.getElementById("route-main");
-    const routeAll = document.getElementById("route-all");
+  <script type="module" src="js/app.js"></script>
 
-    const authWrapper = document.getElementById("auth-wrapper");
-    const dashboard = document.getElementById("dashboard");
-    const userLabel = document.getElementById("user-label");
-    const authMessage = document.getElementById("auth-message");
-    const loginForm = document.getElementById("login-form");
-    const registerForm = document.getElementById("register-form");
-    const authTabLogin = document.getElementById("auth-tab-login");
-    const authTabRegister = document.getElementById("auth-tab-register");
-    const copyTokenBtn = document.getElementById("copy-token-btn");
-    const logoutBtn = document.getElementById("logout-btn");
-    const googleLoginBtn = document.getElementById("google-login-btn");
-    const searchInput = document.getElementById("search-input");
-
-    let vistaActual = "main";
-    let comandosCache = [];
-
-    function getToken() {
-      return localStorage.getItem("access_token");
-    }
-
-    function getTokenUser() {
-      return localStorage.getItem("token_user");
-    }
-
-    function setToken(token, username) {
-      localStorage.setItem("access_token", token);
-      localStorage.setItem("token_user", username);
-      actualizarUI();
-    }
-
-    function clearToken() {
-      localStorage.removeItem("access_token");
-      localStorage.removeItem("token_user");
-      actualizarUI();
-    }
-
-    function actualizarUI() {
-      const token = getToken();
-      const user = getTokenUser();
-      if (token && user) {
-        authWrapper.style.display = "none";
-        dashboard.style.display = "block";
-        userLabel.textContent = `Conectado como: ${user}`;
-      } else {
-        authWrapper.style.display = "flex";
-        dashboard.style.display = "none";
-      }
-    }
-
-    function mostrarMensaje(texto, tipo) {
-      authMessage.textContent = texto;
-      authMessage.className = "auth-message " + (tipo || "");
-    }
-
-    async function login(username, password) {
-      const formData = new URLSearchParams();
-      formData.append("username", username);
-      formData.append("password", password);
-      const res = await fetch(`${API_BASE}/token`, {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: formData,
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.detail || "Error al iniciar sesion");
-      return data;
-    }
-
-    async function register(username, apellidos, correo, password) {
-      const res = await fetch(`${API_BASE}/register`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, apellidos, correo, password }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.detail || "Error al registrarse");
-      return data;
-    }
-
-    loginForm.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const username = document.getElementById("login-username").value;
-      const password = document.getElementById("login-password").value;
-      try {
-        const data = await login(username, password);
-        setToken(data.access_token, username);
-        loginForm.reset();
-        cargarComandos();
-      } catch (err) {
-        mostrarMensaje(err.message, "error");
-      }
-    });
-
-    registerForm.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const username = document.getElementById("reg-username").value;
-      const apellidos = document.getElementById("reg-apellidos").value;
-      const correo = document.getElementById("reg-correo").value;
-      const password = document.getElementById("reg-password").value;
-      try {
-        const data = await register(username, apellidos, correo, password);
-        mostrarMensaje(data.mensaje + " — ahora inicia sesion", "success");
-        registerForm.reset();
-        authTabLogin.click();
-      } catch (err) {
-        mostrarMensaje(err.message, "error");
-      }
-    });
-
-    googleLoginBtn.addEventListener("click", () => {
-      window.location.href = `${API_BASE}/auth/google/login`;
-    });
-
-    authTabLogin.addEventListener("click", () => {
-      authTabLogin.classList.add("active");
-      authTabRegister.classList.remove("active");
-      loginForm.style.display = "";
-      registerForm.style.display = "none";
-      authMessage.textContent = "";
-      authMessage.className = "auth-message";
-    });
-
-    authTabRegister.addEventListener("click", () => {
-      authTabRegister.classList.add("active");
-      authTabLogin.classList.remove("active");
-      registerForm.style.display = "";
-      loginForm.style.display = "none";
-      authMessage.textContent = "";
-      authMessage.className = "auth-message";
-    });
-
-    copyTokenBtn.addEventListener("click", () => {
-      const token = getToken();
-      if (token) {
-        navigator.clipboard.writeText(token).then(() => {
-          copyTokenBtn.textContent = "Copiado!";
-          setTimeout(() => { copyTokenBtn.textContent = "Copiar Token"; }, 2000);
-        });
-      }
-    });
-
-    logoutBtn.addEventListener("click", clearToken);
-
-    // ─── Handle Google OAuth redirect ───
-    const urlParams = new URLSearchParams(window.location.search);
-    const urlToken = urlParams.get("token");
-    const urlUser = urlParams.get("user");
-    if (urlToken && urlUser) {
-      setToken(urlToken, urlUser);
-      window.history.replaceState({}, "", window.location.pathname);
-    }
-
-    actualizarUI();
-
-    function formatearHora(fechaTexto) {
-      if (!fechaTexto) return "--:--";
-      const fecha = new Date(fechaTexto.replace(" ", "T"));
-      if (Number.isNaN(fecha.getTime())) return "--:--";
-      return fecha.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" });
-    }
-
-    function crearItemComando(item) {
-      const li = document.createElement("li");
-
-      const time = document.createElement("span");
-      time.className = "time";
-      time.textContent = formatearHora(item.fecha);
-
-      const code = document.createElement("code");
-      code.textContent = item.comando || "(sin comando)";
-
-      const path = document.createElement("span");
-      path.className = "path";
-      path.textContent = item.ruta || "(sin ruta)";
-
-      li.appendChild(time);
-      li.appendChild(code);
-      li.appendChild(path);
-      return li;
-    }
-
-    function renderComandos(comandos) {
-      commandList.innerHTML = "";
-
-      if (!Array.isArray(comandos) || comandos.length === 0) {
-        statusMessage.textContent = "Sin comandos disponibles.";
-        return;
-      }
-
-      statusMessage.textContent = `Mostrando ${comandos.length} comando${comandos.length !== 1 ? "s" : ""}`;
-      comandos.forEach((item) => {
-        commandList.appendChild(crearItemComando(item));
-      });
-    }
-
-    function filtrarComandos(texto) {
-      if (!texto) {
-        renderComandos(comandosCache);
-        return;
-      }
-      const filtrados = comandosCache.filter((item) => {
-        const comando = (item.comando || "").toLowerCase();
-        const ruta = (item.ruta || "").toLowerCase();
-        const q = texto.toLowerCase();
-        return comando.includes(q) || ruta.includes(q);
-      });
-      renderComandos(filtrados);
-    }
-
-    function aplicarVista(vista) {
-      vistaActual = vista;
-      tabMain.classList.toggle("active", vista === "main");
-      tabAll.classList.toggle("active", vista === "all");
-      routeMain.classList.toggle("active-route", vista === "main");
-      routeAll.classList.toggle("active-route", vista === "all");
-      panelTitle.textContent = vista === "main" ? "Ultimos comandos" : "Todo el historial";
-      activeEndpoint.textContent = vista === "main" ? "/historial/ultimos" : "/historial/todos";
-    }
-
-    async function cargarComandos() {
-      statusMessage.textContent = "Cargando comandos...";
-      statusMessage.classList.remove("error");
-      refreshBtn.disabled = true;
-
-      try {
-        const respuesta = await fetch(ENDPOINTS[vistaActual]);
-        if (!respuesta.ok) {
-          throw new Error("Respuesta invalida del servidor");
-        }
-
-        const data = await respuesta.json();
-        comandosCache = data.comandos || [];
-        searchInput.value = "";
-        renderComandos(comandosCache);
-      } catch (error) {
-        commandList.innerHTML = "";
-        comandosCache = [];
-        statusMessage.textContent = "No se pudo conectar al backend.";
-        statusMessage.classList.add("error");
-      } finally {
-        refreshBtn.disabled = false;
-      }
-    }
-
-    searchInput.addEventListener("input", (e) => {
-      filtrarComandos(e.target.value);
-    });
-
-    refreshBtn.addEventListener("click", cargarComandos);
-    tabMain.addEventListener("click", () => {
-      aplicarVista("main");
-      cargarComandos();
-    });
-    tabAll.addEventListener("click", () => {
-      aplicarVista("all");
-      cargarComandos();
-    });
-
-    if (getToken()) cargarComandos();
-  </script>
 </body>
 </html>

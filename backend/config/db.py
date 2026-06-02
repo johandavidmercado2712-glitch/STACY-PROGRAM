@@ -58,6 +58,45 @@ def guardar_comando(comando: str, ruta: str):
         return False
 
 
+def guardar_comandos_nuevos(comandos, ts_map):
+    """Guarda solo los comandos que aún no están en ts_map, con timestamps escalonados."""
+    nuevos = [c for c in comandos if isinstance(c, dict) and c.get("comando", "") not in ts_map]
+    if not nuevos:
+        return
+    try:
+        conexion = connect(**DB_CONFIG)
+        cursor = conexion.cursor()
+        for i, cmd in enumerate(nuevos):
+            cursor.execute(
+                "INSERT INTO comandos (COM_NOMBRE, COM_FECHA, COM_RUTA) VALUES (%s, DATE_SUB(NOW(), INTERVAL %s SECOND), %s)",
+                (cmd["comando"], i * 2, cmd.get("ruta", "")),
+            )
+            ts_map[cmd["comando"]] = None
+        conexion.commit()
+        cursor.close()
+        conexion.close()
+    except Error as e:
+        print(f"Error al guardar comandos nuevos: {e}")
+
+
+def obtener_comando_por_nombre(nombre):
+    """Obtiene el registro más reciente de un comando por nombre."""
+    try:
+        conexion = connect(**DB_CONFIG)
+        cursor = conexion.cursor(dictionary=True)
+        cursor.execute(
+            "SELECT * FROM comandos WHERE COM_NOMBRE = %s ORDER BY COM_ID DESC LIMIT 1",
+            (nombre,),
+        )
+        comando = cursor.fetchone()
+        cursor.close()
+        conexion.close()
+        return comando
+    except Error as e:
+        print(f"Error al buscar comando: {e}")
+        return None
+
+
 def obtener_comandos(limite: int = None):
     """Obtiene comandos de la base de datos."""
     try:
@@ -75,7 +114,7 @@ def obtener_comandos(limite: int = None):
         comandos = cursor.fetchall()
         cursor.close()
         conexion.close()
-        return list(reversed(comandos)) #por lo general la base de datos extrae los de la mas antigua a la mas nueva pero lo vamos a invertir de nuevo a viejo
+        return comandos
 
     except Error as e:
         print(f"❌ Error al obtener comandos: {e}")

@@ -9,11 +9,15 @@ from app.controllers.historial_controller import (
 )
 from auth.auth import get_current_user
 from auth.auth import router as auth_router
-from config.db import DB_CONFIG  # tra la configuracion de la base de datos
-from mysql.connector import Error, connect  # extrae las herramientas de mysql
+from routes.carpetas import router as carpetas_router
+from config.db import DB_CONFIG, guardar_comandos_nuevos, obtener_comando_por_nombre, obtener_comandos
+from config.carpetasBD import crear_tablas_carpetas
+from mysql.connector import Error, connect
 
 app = FastAPI(title="Historial de Comandos API", version="1.0.0") #encargado de manejar todas las rutas 
 app.include_router(auth_router)
+app.include_router(carpetas_router)
+crear_tablas_carpetas()
 origins =[
     "http://localhost:8000",
     "http://localhost:5000",
@@ -41,18 +45,54 @@ def principal():
 
 @app.get("/historial/ultimos")
 def obtener_ultimos_comandos():
-    """Retorna los últimos 11 comandos."""
+    """Retorna los últimos 11 comandos del shell con timestamps reales de la BD."""
     try:
         controlador = HistorialControlador()
         modelo = controlador.modelo
         comandos = modelo.obtener_desde_fc()
         if not comandos:
             comandos = modelo.obtener_desde_archivo()
-        return {
-            "estado": "éxito",
-            "total": len(comandos),
-            "comandos": comandos,
-        }
+
+        if not comandos:
+            return {"estado": "éxito", "total": 0, "comandos": []}
+
+        existentes = obtener_comandos()
+        ts_map = {c["COM_NOMBRE"]: c["COM_FECHA"] for c in existentes}
+        id_map = {c["COM_NOMBRE"]: c["COM_ID"] for c in existentes}
+
+        guardar_comandos_nuevos(comandos, ts_map)
+
+        existentes = obtener_comandos()
+        id_map = {c["COM_NOMBRE"]: c["COM_ID"] for c in existentes}
+
+        resultado = []
+        for cmd in comandos:
+            if not isinstance(cmd, dict):
+                continue
+            nombre = cmd.get("comando", "")
+            ruta = cmd.get("ruta", "")
+            if not nombre:
+                continue
+
+            fecha = ts_map.get(nombre)
+            if not fecha:
+                comando_db = obtener_comando_por_nombre(nombre)
+                fecha = comando_db["COM_FECHA"] if comando_db else None
+
+            if isinstance(fecha, str):
+                pass
+            elif hasattr(fecha, "strftime"):
+                fecha = fecha.strftime("%Y-%m-%d %H:%M:%S")
+
+            resultado.append({
+                "com_id": id_map.get(nombre),
+                "comando": nombre,
+                "fecha": fecha,
+                "ruta": ruta,
+            })
+
+        resultado.reverse()
+        return {"estado": "éxito", "total": len(resultado), "comandos": resultado}
     except Exception as e:
         return JSONResponse(
             status_code=500, content={"estado": "error", "mensaje": str(e)}
@@ -61,18 +101,53 @@ def obtener_ultimos_comandos():
 
 @app.get("/historial/todos")
 def obtener_todos_comandos():
-    """Retorna todo el historial de comandos."""
+    """Retorna todo el historial con timestamps reales de la BD."""
     try:
         controlador = HistorialControladorCompleto()
         modelo = controlador.modelo
         comandos = modelo.obtener_todo_desde_fc()
         if not comandos:
             comandos = modelo.obtener_todo_desde_archivo()
-        return {
-            "estado": "éxito",
-            "total": len(comandos),
-            "comandos": comandos,
-        }
+
+        if not comandos:
+            return {"estado": "éxito", "total": 0, "comandos": []}
+
+        existentes = obtener_comandos()
+        ts_map = {c["COM_NOMBRE"]: c["COM_FECHA"] for c in existentes}
+        id_map = {c["COM_NOMBRE"]: c["COM_ID"] for c in existentes}
+
+        guardar_comandos_nuevos(comandos, ts_map)
+
+        existentes = obtener_comandos()
+        id_map = {c["COM_NOMBRE"]: c["COM_ID"] for c in existentes}
+
+        resultado = []
+        for cmd in comandos:
+            if not isinstance(cmd, dict):
+                continue
+            nombre = cmd.get("comando", "")
+            ruta = cmd.get("ruta", "")
+            if not nombre:
+                continue
+
+            fecha = ts_map.get(nombre)
+            if not fecha:
+                comando_db = obtener_comando_por_nombre(nombre)
+                fecha = comando_db["COM_FECHA"] if comando_db else None
+
+            if isinstance(fecha, str):
+                pass
+            elif hasattr(fecha, "strftime"):
+                fecha = fecha.strftime("%Y-%m-%d %H:%M:%S")
+
+            resultado.append({
+                "com_id": id_map.get(nombre),
+                "comando": nombre,
+                "fecha": fecha,
+                "ruta": ruta,
+            })
+
+        return {"estado": "éxito", "total": len(resultado), "comandos": resultado}
     except Exception as e:
         return JSONResponse(
             status_code=500, content={"estado": "error", "mensaje": str(e)}
