@@ -109,85 +109,8 @@ def obtener_comando_por_nombre(nombre, usu_id: int = None):
         return None
 
 
-def reclamar_comandos_sin_usuario(usu_id: int):
-    """Asigna los comandos sin dueño al usuario actual."""
-    try:
-        conexion = connect(**DB_CONFIG)
-        cursor = conexion.cursor()
-        cursor.execute(
-            "UPDATE comandos SET USU_ID = %s WHERE USU_ID IS NULL",
-            (usu_id,),
-        )
-        conexion.commit()
-        filas = cursor.rowcount
-        cursor.close()
-        conexion.close()
-        if filas:
-            print(f"Se asignaron {filas} comandos al usuario {usu_id}")
-        return filas
-    except Error as e:
-        print(f"Error al reclamar comandos: {e}")
-        return 0
-
-
-def importar_comandos(comandos: list, usu_id: int):
-    """Importa una lista de comandos desde un PC externo.
-    Cada comando: {"comando": str, "ruta": str, "fecha": str (opcional)}.
-    Omite duplicados; si un comando ya existe sin tag de maquina, lo actualiza.
-    """
-    try:
-        conexion = connect(**DB_CONFIG)
-        cursor = conexion.cursor(dictionary=True)
-
-        cursor.execute(
-            "SELECT COM_NOMBRE, COM_RUTA FROM comandos WHERE USU_ID = %s",
-            (usu_id,),
-        )
-        existentes = {}
-        for row in cursor.fetchall():
-            existentes[row["COM_NOMBRE"]] = row["COM_RUTA"] or ""
-
-        insertados = 0
-        for cmd in comandos:
-            nombre = cmd.get("comando", "").strip()
-            if not nombre:
-                continue
-            ruta = cmd.get("ruta", "") or ""
-            fecha = cmd.get("fecha")
-
-            if nombre in existentes:
-                ruta_vieja = existentes[nombre]
-                if "[MAQUINA:" not in ruta_vieja and "[MAQUINA:" in ruta:
-                    cursor.execute(
-                        "UPDATE comandos SET COM_RUTA = %s WHERE COM_NOMBRE = %s AND USU_ID = %s",
-                        (ruta, nombre, usu_id),
-                    )
-                    insertados += 1
-                continue
-
-            if fecha:
-                cursor.execute(
-                    "INSERT INTO comandos (COM_NOMBRE, COM_FECHA, COM_RUTA, USU_ID) VALUES (%s, %s, %s, %s)",
-                    (nombre, fecha, ruta, usu_id),
-                )
-            else:
-                cursor.execute(
-                    "INSERT INTO comandos (COM_NOMBRE, COM_FECHA, COM_RUTA, USU_ID) VALUES (%s, NOW(), %s, %s)",
-                    (nombre, ruta, usu_id),
-                )
-            insertados += 1
-
-        conexion.commit()
-        cursor.close()
-        conexion.close()
-        return insertados
-    except Error as e:
-        print(f"Error al importar comandos: {e}")
-        return 0
-
-
 def obtener_comandos(limite: int = None, usu_id: int = None):
-    """Obtiene comandos de la base de datos, solo del usuario especificado."""
+    """Obtiene comandos de la base de datos, opcionalmente filtrados por usuario."""
     try:
         conexion = connect(**DB_CONFIG)
         cursor = conexion.cursor(dictionary=True)
@@ -195,12 +118,12 @@ def obtener_comandos(limite: int = None, usu_id: int = None):
         if usu_id:
             if limite:
                 cursor.execute(
-                    "SELECT * FROM comandos WHERE USU_ID = %s ORDER BY COM_ID DESC LIMIT %s",
+                    "SELECT * FROM comandos WHERE USU_ID = %s OR USU_ID IS NULL ORDER BY COM_ID DESC LIMIT %s",
                     (usu_id, limite),
                 )
             else:
                 cursor.execute(
-                    "SELECT * FROM comandos WHERE USU_ID = %s ORDER BY COM_ID DESC",
+                    "SELECT * FROM comandos WHERE USU_ID = %s OR USU_ID IS NULL ORDER BY COM_ID DESC",
                     (usu_id,),
                 )
         else:

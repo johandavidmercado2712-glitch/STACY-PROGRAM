@@ -1,4 +1,6 @@
-export const API_BASE = "http://localhost:8000";
+import { getCookie } from './cookie.js';
+
+export const API_BASE = "http://52.87.195.200:8000";
 
 export async function login(username, password) {
   const formData = new URLSearchParams();
@@ -26,13 +28,15 @@ export async function register(username, apellidos, correo, password) {
 }
 
 function authHeaders() {
-  const token = localStorage.getItem("access_token");
+  let token = getCookie("access_token");
+  if (!token) token = localStorage.getItem("access_token_backup");
+  console.log("[DEBUG] authHeaders token found:", !!token, "cookie:", !!getCookie("access_token"));
   if (!token) return {};
   return { "Authorization": "Bearer " + token };
 }
 
 export async function fetchComandos() {
-  const res = await fetch(API_BASE + "/historial/todos");
+  const res = await fetch(API_BASE + "/historial/todos", { headers: authHeaders() });
   if (!res.ok) throw new Error("Respuesta invalida del servidor");
   return await res.json();
 }

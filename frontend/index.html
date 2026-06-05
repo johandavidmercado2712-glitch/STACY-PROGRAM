@@ -14,6 +14,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
+  <link rel="icon" href="data:," />
 </head>
 <body>
 
@@ -26,10 +27,31 @@
       </span>
     </div>
     <div class="navbar-user" id="navbar-user">
-      <span class="user-label" id="user-label"></span>
       <button id="theme-toggle" type="button" class="btn-navbar btn-icon-navbar" title="Cambiar tema"></button>
-      <button id="copy-token-btn" type="button" class="btn-navbar">Copiar Token</button>
-      <button id="logout-btn" type="button" class="btn-navbar btn-outline">Cerrar sesion</button>
+      <button id="machine-select-btn" type="button" class="btn-navbar">Bajar comandos de este equipo</button>
+      <div class="user-trigger" id="user-trigger">
+        <span class="user-label" id="user-label"></span>
+        <span class="user-avatar" id="user-avatar">?</span>
+      </div>
+    </div>
+
+    <!-- ═══ PROFILE PANEL ═══ -->
+    <div class="profile-overlay" id="profile-overlay" style="display:none"></div>
+    <div class="profile-panel" id="profile-panel">
+      <div class="profile-header">
+        <div class="profile-avatar-lg" id="profile-avatar">?</div>
+        <div class="profile-info">
+          <span class="profile-username" id="profile-username">---</span>
+          <span class="profile-label">Perfil de usuario</span>
+        </div>
+      </div>
+      <div class="profile-body">
+        <hr class="profile-divider" />
+        <button class="profile-logout" id="profile-logout">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          Cerrar sesion
+        </button>
+      </div>
     </div>
   </nav>
 
@@ -121,12 +143,6 @@
               </div>
               <span class="folder-count" id="count-all">0</span>
             </li>
-            <li class="folder-item" data-folder-id="uncategorized">
-              <div class="folder-info">
-                <span class="folder-name">Sin carpeta</span>
-              </div>
-              <span class="folder-count" id="count-uncategorized">0</span>
-            </li>
           </ul>
 
         </aside>
@@ -137,6 +153,7 @@
               <input type="text" id="search-input" placeholder="Filtrar comandos..." />
             </div>
             <div class="toolbar-actions">
+              <div class="machine-toggle" id="machine-filter" style="display:none"></div>
               <div class="view-toggle toolbar-toggle">
                 <button id="view-recent" class="view-btn" type="button">Ultimos 11</button>
                 <button id="view-all" class="view-btn active" type="button">Todos</button>
@@ -172,14 +189,14 @@
         <button class="modal-close" id="modal-close">&times;</button>
       </div>
       <div class="modal-body" id="modal-body"></div>
-      <div class="modal-footer">
+      <div class="modal-footer" id="modal-footer">
         <button class="btn-sm btn-outline" id="modal-cancel">Cancelar</button>
         <button class="btn-sm" id="modal-save">Guardar</button>
       </div>
     </div>
   </div>
 
-  <script type="module" src="js/app.js"></script>
+  <script type="module" src="js/app.js?v=5"></script>
 
 </body>
 </html>
