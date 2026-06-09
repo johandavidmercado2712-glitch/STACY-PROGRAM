@@ -719,6 +719,9 @@ export function mostrarSiNoHayMaquinas() {
   const maquinas = state.maquinasDisponibles || [];
   if (maquinas.length === 0) {
     const token = getToken() || localStorage.getItem("access_token_backup") || "";
-    if (token) mostrarModalMaquinas();
+    if (token && !localStorage.getItem("stacy_download_prompted")) {
+      localStorage.setItem("stacy_download_prompted", "1");
+      mostrarModalMaquinas();
+    }
   }
 }
