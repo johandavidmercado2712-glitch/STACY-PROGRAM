@@ -542,6 +542,7 @@ function mostrarModalMaquinas() {
           '<p>Abre una terminal y navega a la carpeta donde se descargo el archivo (normalmente <strong>Descargas</strong>). Luego corre:</p>' +
           '<code class="paso-code">cd ~/Downloads && bash upload_history.sh</code>' +
           '<p class="paso-nota">Si lo guardaste en otra carpeta, usa <code>cd /ruta/donde/lo/guardaste</code></p>' +
+          '<p class="paso-nota">Si es una maquina nueva, abre una terminal, ejecuta algunos comandos y <strong>cierrala</strong> para que se guarde el historial, luego ejecuta el script.</p>' +
         '</div>';
     } else {
       paso2html =
@@ -550,6 +551,7 @@ function mostrarModalMaquinas() {
           '<p>Abre <strong>PowerShell</strong> como usuario normal y navega a la carpeta donde se descargo el archivo (normalmente <strong>Descargas</strong>). Luego corre:</p>' +
           '<code class="paso-code">cd ~\\Downloads && .\\upload_history.ps1</code>' +
           '<p class="paso-nota">Si es la primera vez, ejecuta antes: <code>Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass</code></p>' +
+          '<p class="paso-nota">Si es una maquina nueva, abre PowerShell, ejecuta algunos comandos y <strong>cierra la ventana</strong> para que se guarde el historial, luego ejecuta el script.</p>' +
         '</div>';
     }
 
@@ -622,8 +624,16 @@ function descargarScript(token, os) {
 '$HOSTNAME = $env:COMPUTERNAME\n' +
 '\n' +
 '$histFile = "$env:USERPROFILE\AppData\Roaming\Microsoft\Windows\PowerShell\PSReadLine\ConsoleHost_history.txt"\n' +
+'\n' +
 'if (-not (Test-Path $histFile)) {\n' +
-'  Write-Host "No se encontro el historial de PowerShell"\n' +
+'  Write-Host "==============================================="\n' +
+'  Write-Host " No se encontro el historial de PowerShell."\n' +
+'  Write-Host ""\n' +
+'  Write-Host " Abre una NUEVA ventana de PowerShell, ejecuta"\n' +
+'  Write-Host " algunos comandos (ls, cd, etc.), cierrala"\n' +
+'  Write-Host " para guardar el historial, y vuelve a"\n' +
+'  Write-Host " ejecutar este script."\n' +
+'  Write-Host "==============================================="\n' +
 '  exit 1\n' +
 '}\n' +
 '\n' +
@@ -638,10 +648,10 @@ function descargarScript(token, os) {
 '$body = @{ comandos = $comandos } | ConvertTo-Json -Compress\n' +
 "$headers = @{ Authorization = 'Bearer $TOKEN'; 'Content-Type' = 'application/json' }\n" +
 '\n' +
-'Write-Host "Subiendo $($comandos.Length) comandos..."\n' +
+'Write-Host "Subiendo $($comandos.Length) comandos desde $HOSTNAME..."\n' +
 'try {\n' +
 '  Invoke-RestMethod -Uri "$API_URL/comandos/importar" -Method Post -Headers $headers -Body $body\n' +
-'  Write-Host "Comandos subidos correctamente desde $HOSTNAME"\n' +
+'  Write-Host "Comandos subidos correctamente."\n' +
 '} catch {\n' +
 '  Write-Host "Error: $_"\n' +
 '}\n';
@@ -651,31 +661,47 @@ function descargarScript(token, os) {
     contenido =
 '#!/bin/bash\n' +
 'API_URL="' + API_URL + '"\n' +
-'TOKEN="' + token + '"\n' +
+"TOKEN='" + token + "'\n" +
 '\n' +
 'HOSTNAME=$(hostname)\n' +
-'HISTFILE="${BASH_HISTFILE:-$HOME/.bash_history}"\n' +
-'[ ! -f "$HISTFILE" ] && HISTFILE="$HOME/.zsh_history"\n' +
-'[ ! -f "$HISTFILE" ] && { echo "No se encontro .bash_history ni .zsh_history"; exit 1; }\n' +
 '\n' +
-'python3 -c "\n' +
+'HISTFILE="${HISTFILE:-}"\n' +
+'[ -z "$HISTFILE" ] && HISTFILE="$HOME/.bash_history"\n' +
+'[ ! -f "$HISTFILE" ] && HISTFILE="$HOME/.zsh_history"\n' +
+'[ ! -f "$HISTFILE" ] && HISTFILE="$HOME/.zhistory"\n' +
+'[ ! -f "$HISTFILE" ] && {\n' +
+'  echo "==============================================="\n' +
+'  echo " No se encontro archivo de historial."\n' +
+'  echo ""\n' +
+'  echo " Ejecuta algunos comandos (ls, cd, etc.) en"\n' +
+'  echo " una terminal NUEVA, cierrala para guardar el"\n' +
+'  echo " historial, y vuelve a ejecutar este script."\n' +
+'  echo "==============================================="\n' +
+'  exit 1\n' +
+'}\n' +
+'\n' +
+'COMANDOS=$(python3 << PYEOF\n' +
 'import json, sys\n' +
 'hist = []\n' +
-'with open(\'$HISTFILE\', \'r\', errors=\'ignore\') as f:\n' +
+'with open("$HISTFILE", "r", errors="ignore") as f:\n' +
 '    for line in f:\n' +
-'        line = line.strip().rstrip(\'\\n\')\n' +
-'        if not line or line.startswith(\'#\'):\n' +
+'        line = line.strip().rstrip("\\n")\n' +
+'        if not line or line.startswith("#"):\n' +
 '            continue\n' +
 '        hist.append({\n' +
-'            \'comando\': line,\n' +
-'            \'ruta\': \'[MAQUINA:${HOSTNAME}]\',\n' +
-'            \'fecha\': None\n' +
+'            "comando": line,\n' +
+'            "ruta": "[MAQUINA:${HOSTNAME}]",\n' +
+'            "fecha": None\n' +
 '        })\n' +
-'print(json.dumps({\'comandos\': hist}))\n' +
-'" | curl -s -X POST "$API_URL/comandos/importar" \\\n' +
-'    -H "Content-Type: application/json" \\\n' +
-'    -H "Authorization: Bearer $TOKEN" \\\n' +
-'    --data-binary @-\n' +
+'print(json.dumps({"comandos": hist}))\n' +
+'PYEOF\n' +
+')\n' +
+'\n' +
+'echo "Subiendo comandos desde $HOSTNAME..."\n' +
+'curl -s -X POST "$API_URL/comandos/importar" \\\n' +
+'  -H "Content-Type: application/json" \\\n' +
+'  -H "Authorization: Bearer $TOKEN" \\\n' +
+'  --data-binary "$COMANDOS"\n' +
 '\n' +
 'echo ""\n';
   }
