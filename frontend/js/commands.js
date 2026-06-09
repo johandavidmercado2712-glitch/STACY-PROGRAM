@@ -526,51 +526,165 @@ function mostrarModalSeleccionMaquinas() {
 
 function mostrarModalMaquinas() {
   const token = getToken() || localStorage.getItem("access_token_backup") || "";
-  const html =
-    '<div class="pasos-guide">' +
-      '<div class="paso">' +
-        '<span class="paso-num">1</span>' +
-        '<div class="paso-texto">' +
-          '<strong>Descarga el script</strong>' +
-          '<p>Haz clic en el boton de abajo para descargar el archivo <code>upload_history.sh</code> con tu token incluido.</p>' +
-        '</div>' +
-      '</div>' +
-      '<div class="paso">' +
-        '<span class="paso-num">2</span>' +
+  let osActual = "linux";
+
+  function generarHTML(os) {
+    const esLinux = os === "linux";
+    const scriptName = esLinux ? "upload_history.sh" : "upload_history.ps1";
+    const btnLabel = "Descargar " + scriptName;
+    const tabClass = function (tab) { return "os-tab" + (tab === os ? " active" : ""); };
+
+    let paso2html;
+    if (esLinux) {
+      paso2html =
         '<div class="paso-texto">' +
           '<strong>Ejecutalo en tu terminal</strong>' +
           '<p>Abre una terminal y navega a la carpeta donde se descargo el archivo (normalmente <strong>Descargas</strong>). Luego corre:</p>' +
           '<code class="paso-code">cd ~/Downloads && bash upload_history.sh</code>' +
           '<p class="paso-nota">Si lo guardaste en otra carpeta, usa <code>cd /ruta/donde/lo/guardaste</code></p>' +
-        '</div>' +
-      '</div>' +
-      '<div class="paso">' +
-        '<span class="paso-num">3</span>' +
+        '</div>';
+    } else {
+      paso2html =
         '<div class="paso-texto">' +
-          '<strong>Actualiza la pagina</strong>' +
-          '<p>Presiona <kbd>Ctrl+Shift+R</kbd> o haz clic en "Actualizar" y tus comandos apareceran con el nombre de tu maquina.</p>' +
+          '<strong>Ejecutalo en PowerShell</strong>' +
+          '<p>Abre <strong>PowerShell</strong> como usuario normal y navega a la carpeta donde se descargo el archivo (normalmente <strong>Descargas</strong>). Luego corre:</p>' +
+          '<code class="paso-code">cd ~\\Downloads && .\\upload_history.ps1</code>' +
+          '<p class="paso-nota">Si es la primera vez, ejecuta antes: <code>Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass</code></p>' +
+        '</div>';
+    }
+
+    return (
+      '<div class="os-selector">' +
+        '<button class="' + tabClass("linux") + '" data-os="linux">Linux / Mac</button>' +
+        '<button class="' + tabClass("windows") + '" data-os="windows">Windows</button>' +
+      '</div>' +
+      '<div class="pasos-guide">' +
+        '<div class="paso">' +
+          '<span class="paso-num">1</span>' +
+          '<div class="paso-texto">' +
+            '<strong>Descarga el script</strong>' +
+            '<p>Haz clic en el boton de abajo para descargar el archivo <code>' + scriptName + '</code> con tu token incluido.</p>' +
+          '</div>' +
+        '</div>' +
+        '<div class="paso">' +
+          '<span class="paso-num">2</span>' +
+          paso2html +
+        '</div>' +
+        '<div class="paso">' +
+          '<span class="paso-num">3</span>' +
+          '<div class="paso-texto">' +
+            '<strong>Actualiza la pagina</strong>' +
+            '<p>Presiona <kbd>Ctrl+Shift+R</kbd> o haz clic en "Actualizar" y tus comandos apareceran con el nombre de tu maquina.</p>' +
+          '</div>' +
         '</div>' +
       '</div>' +
-    '</div>' +
-    '<button id="download-script-btn" class="btn-sm" style="width:100%;margin-top:0.75rem;">Descargar upload_history.sh</button>';
+      '<button id="download-script-btn" class="btn-sm" style="width:100%;margin-top:0.75rem;">' + btnLabel + '</button>'
+    );
+  }
+
+  function render(os) {
+    osActual = os;
+    document.getElementById("modal-body").innerHTML = generarHTML(os);
+    document.getElementById("download-script-btn").addEventListener("click", function () {
+      descargarScript(token, osActual);
+    });
+    document.querySelectorAll(".os-tab").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        render(this.dataset.os);
+      });
+    });
+  }
 
   document.getElementById("modal-cancel").style.display = "none";
   document.getElementById("modal-save").textContent = "Cerrar";
   document.getElementById("modal-save").onclick = hideModal;
-  showModal("Bajar comandos de este equipo", html);
-
+  showModal("Bajar comandos de este equipo", generarHTML("linux"));
   document.getElementById("download-script-btn").addEventListener("click", function () {
-    descargarScript(token);
+    descargarScript(token, "linux");
+  });
+  document.querySelectorAll(".os-tab").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      render(this.dataset.os);
+    });
   });
 }
 
-function descargarScript(token) {
-  const contenido = '#!/bin/bash\n\nAPI_URL="http://52.87.195.200:8000"\nTOKEN="' + token + '"\n\nHOSTNAME=$(hostname)\nHISTFILE="${BASH_HISTFILE:-$HOME/.bash_history}"\n[ ! -f "$HISTFILE" ] && HISTFILE="$HOME/.zsh_history"\n[ ! -f "$HISTFILE" ] && { echo "No se encontro .bash_history ni .zsh_history"; exit 1; }\n\npython3 -c "\nimport json, sys\nhist = []\nwith open(\'$HISTFILE\', \'r\', errors=\'ignore\') as f:\n    for line in f:\n        line = line.strip().rstrip(\'\\n\')\n        if not line or line.startswith(\'#\'):\n            continue\n        hist.append({\n            \'comando\': line,\n            \'ruta\': \'[MAQUINA:${HOSTNAME}]\',\n            \'fecha\': None\n        })\nprint(json.dumps({\'comandos\': hist}))\n" | curl -s -X POST "$API_URL/comandos/importar" \\\n    -H "Content-Type: application/json" \\\n    -H "Authorization: Bearer $TOKEN" \\\n    --data-binary @-\n\necho ""\n';
-  const blob = new Blob([contenido], { type: "text/x-shellscript" });
+function descargarScript(token, os) {
+  const API_URL = "http://52.87.195.200:8000";
+  let contenido, nombreArchivo, tipoMime;
+
+  if (os === "windows") {
+    nombreArchivo = "upload_history.ps1";
+    tipoMime = "text/x-powershell";
+    contenido =
+'$API_URL = "' + API_URL + '"\n' +
+"$TOKEN = '" + token + "'\n" +
+'$HOSTNAME = $env:COMPUTERNAME\n' +
+'\n' +
+'$histFile = "$env:USERPROFILE\AppData\Roaming\Microsoft\Windows\PowerShell\PSReadLine\ConsoleHost_history.txt"\n' +
+'if (-not (Test-Path $histFile)) {\n' +
+'  Write-Host "No se encontro el historial de PowerShell"\n' +
+'  exit 1\n' +
+'}\n' +
+'\n' +
+'$comandos = @()\n' +
+'Get-Content $histFile | ForEach-Object {\n' +
+'  $line = $_.Trim()\n' +
+'  if ($line -and -not $line.StartsWith("#")) {\n' +
+'    $comandos += @{ comando = $line; ruta = "[MAQUINA:$HOSTNAME]"; fecha = $null }\n' +
+'  }\n' +
+'}\n' +
+'\n' +
+'$body = @{ comandos = $comandos } | ConvertTo-Json -Compress\n' +
+"$headers = @{ Authorization = 'Bearer $TOKEN'; 'Content-Type' = 'application/json' }\n" +
+'\n' +
+'Write-Host "Subiendo $($comandos.Length) comandos..."\n' +
+'try {\n' +
+'  Invoke-RestMethod -Uri "$API_URL/comandos/importar" -Method Post -Headers $headers -Body $body\n' +
+'  Write-Host "Comandos subidos correctamente desde $HOSTNAME"\n' +
+'} catch {\n' +
+'  Write-Host "Error: $_"\n' +
+'}\n';
+  } else {
+    nombreArchivo = "upload_history.sh";
+    tipoMime = "text/x-shellscript";
+    contenido =
+'#!/bin/bash\n' +
+'API_URL="' + API_URL + '"\n' +
+'TOKEN="' + token + '"\n' +
+'\n' +
+'HOSTNAME=$(hostname)\n' +
+'HISTFILE="${BASH_HISTFILE:-$HOME/.bash_history}"\n' +
+'[ ! -f "$HISTFILE" ] && HISTFILE="$HOME/.zsh_history"\n' +
+'[ ! -f "$HISTFILE" ] && { echo "No se encontro .bash_history ni .zsh_history"; exit 1; }\n' +
+'\n' +
+'python3 -c "\n' +
+'import json, sys\n' +
+'hist = []\n' +
+'with open(\'$HISTFILE\', \'r\', errors=\'ignore\') as f:\n' +
+'    for line in f:\n' +
+'        line = line.strip().rstrip(\'\\n\')\n' +
+'        if not line or line.startswith(\'#\'):\n' +
+'            continue\n' +
+'        hist.append({\n' +
+'            \'comando\': line,\n' +
+'            \'ruta\': \'[MAQUINA:${HOSTNAME}]\',\n' +
+'            \'fecha\': None\n' +
+'        })\n' +
+'print(json.dumps({\'comandos\': hist}))\n' +
+'" | curl -s -X POST "$API_URL/comandos/importar" \\\n' +
+'    -H "Content-Type: application/json" \\\n' +
+'    -H "Authorization: Bearer $TOKEN" \\\n' +
+'    --data-binary @-\n' +
+'\n' +
+'echo ""\n';
+  }
+
+  const blob = new Blob([contenido], { type: tipoMime });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = "upload_history.sh";
+  a.download = nombreArchivo;
   a.click();
   URL.revokeObjectURL(url);
 }

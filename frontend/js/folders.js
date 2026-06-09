@@ -143,6 +143,10 @@ export function showModal(title, bodyHTML) {
   document.getElementById("modal-title").textContent = title;
   document.getElementById("modal-body").innerHTML = bodyHTML;
   document.getElementById("modal-overlay").style.display = "flex";
+  document.getElementById("modal-close").onclick = hideModal;
+  document.getElementById("modal-overlay").onclick = function (e) {
+    if (e.target === this) hideModal();
+  };
 }
 
 export function hideModal() {

@@ -1645,6 +1645,44 @@ body {
   border-radius: 4px;
 }
 
+/* ─── OS SELECTOR ─── */
+
+.os-selector {
+  display: flex;
+  gap: 0;
+  margin-bottom: 1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.os-tab {
+  flex: 1;
+  padding: 0.55rem 0.75rem;
+  background: var(--bg);
+  border: none;
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background var(--transition), color var(--transition);
+  text-align: center;
+}
+
+.os-tab:not(:last-child) {
+  border-right: 1px solid var(--border);
+}
+
+.os-tab.active {
+  background: var(--accent-dim);
+  color: var(--accent);
+}
+
+.os-tab:hover:not(.active) {
+  background: var(--surface-hover);
+  color: var(--text);
+}
+
 /* ─── MACHINE SELECTION MODAL ─── */
 
 .machine-list {
