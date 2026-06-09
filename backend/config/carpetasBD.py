@@ -202,18 +202,29 @@ def actualizar_descripcion_comando(car_id, com_id, descripcion):
             pass
 
 
-def obtener_comandos_de_carpeta(car_id):
+def obtener_comandos_de_carpeta(car_id, usu_id=None):
     try:
         conexion = connect(**DB_CONFIG)
         cursor = conexion.cursor(dictionary=True)
-        cursor.execute(
-            """
-            SELECT c.* FROM comandos c
-            JOIN comando_carpeta cc ON c.COM_ID = cc.COM_ID
-            WHERE cc.CAR_ID = %s
-            """,
-            (car_id,),
-        )
+        if usu_id:
+            cursor.execute(
+                """
+                SELECT c.* FROM comandos c
+                JOIN comando_carpeta cc ON c.COM_ID = cc.COM_ID
+                JOIN carpetas car ON cc.CAR_ID = car.CAR_ID
+                WHERE cc.CAR_ID = %s AND car.USU_ID = %s
+                """,
+                (car_id, usu_id),
+            )
+        else:
+            cursor.execute(
+                """
+                SELECT c.* FROM comandos c
+                JOIN comando_carpeta cc ON c.COM_ID = cc.COM_ID
+                WHERE cc.CAR_ID = %s
+                """,
+                (car_id,),
+            )
         return cursor.fetchall()
     except Error as e:
         print(f"Error al obtener comandos de carpeta: {e}")

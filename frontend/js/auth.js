@@ -1,5 +1,6 @@
 import { API_BASE, login, register } from './api.js';
-import { state } from './state.js';
+import { setCookie, getCookie, deleteCookie } from './cookie.js';
+import { actualizarPanel } from './profile.js';
 
 let _onLogin = null;
 
@@ -11,38 +12,47 @@ const TOKEN_KEY = "access_token";
 const USER_KEY = "token_user";
 
 export function getToken() {
-  return localStorage.getItem(TOKEN_KEY);
+  return getCookie(TOKEN_KEY);
 }
 
 export function getTokenUser() {
-  return localStorage.getItem(USER_KEY);
+  return getCookie(USER_KEY);
 }
 
 export function setToken(token, username) {
-  localStorage.setItem(TOKEN_KEY, token);
-  localStorage.setItem(USER_KEY, username);
+  setCookie(TOKEN_KEY, token);
+  setCookie(USER_KEY, username);
+  localStorage.setItem("access_token_backup", token);
+  localStorage.setItem("token_user_backup", username);
   actualizarUI();
 }
 
 export function clearToken() {
-  localStorage.removeItem(TOKEN_KEY);
-  localStorage.removeItem(USER_KEY);
+  deleteCookie(TOKEN_KEY);
+  deleteCookie(USER_KEY);
+  localStorage.removeItem("access_token_backup");
+  localStorage.removeItem("token_user_backup");
   actualizarUI();
 }
 
 export function actualizarUI() {
-  const token = getToken();
-  const user = getTokenUser();
+  let token = getToken();
+  let user = getTokenUser();
+  if (!token) token = localStorage.getItem("access_token_backup");
+  if (!user) user = localStorage.getItem("token_user_backup");
   const navbar = document.getElementById("navbar");
   const authWrapper = document.getElementById("auth-wrapper");
   const dashboard = document.getElementById("dashboard");
   const userLabel = document.getElementById("user-label");
+  const userAvatar = document.getElementById("user-avatar");
 
   if (token && user) {
     authWrapper.style.display = "none";
     dashboard.style.display = "block";
     navbar.style.display = "flex";
-    if (userLabel) userLabel.textContent = "Conectado como: " + user;
+    if (userLabel) userLabel.textContent = user;
+    if (userAvatar) userAvatar.textContent = user.charAt(0).toUpperCase();
+    actualizarPanel();
   } else {
     authWrapper.style.display = "flex";
     dashboard.style.display = "none";
@@ -62,8 +72,6 @@ export function initAuth() {
   const authTabLogin = document.getElementById("auth-tab-login");
   const authTabRegister = document.getElementById("auth-tab-register");
   const googleLoginBtn = document.getElementById("google-login-btn");
-  const copyTokenBtn = document.getElementById("copy-token-btn");
-  const logoutBtn = document.getElementById("logout-btn");
 
   loginForm.addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -116,18 +124,6 @@ export function initAuth() {
     document.getElementById("auth-message").textContent = "";
     document.getElementById("auth-message").className = "auth-message";
   });
-
-  copyTokenBtn.addEventListener("click", () => {
-    const token = getToken();
-    if (token) {
-      navigator.clipboard.writeText(token).then(() => {
-        copyTokenBtn.textContent = "Copiado!";
-        setTimeout(() => { copyTokenBtn.textContent = "Copiar Token"; }, 2000);
-      });
-    }
-  });
-
-  logoutBtn.addEventListener("click", clearToken);
 
   const urlParams = new URLSearchParams(window.location.search);
   const urlToken = urlParams.get("token");

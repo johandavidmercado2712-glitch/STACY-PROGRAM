@@ -34,7 +34,7 @@ export async function loadFolders() {
 export function renderFolders() {
   const folderList = document.getElementById("folder-list");
   const items = folderList.querySelectorAll(".folder-item");
-  for (let i = items.length - 1; i >= 2; i--) items[i].remove();
+  for (let i = items.length - 1; i >= 1; i--) items[i].remove();
 
   state.folders.forEach(function (f) {
     const li = document.createElement("li");
@@ -84,17 +84,11 @@ export function renderFolders() {
     const fid = el.dataset.folderId;
     el.classList.toggle("active",
       (fid === "all" && state.selectedFolderId === "all") ||
-      (fid === "uncategorized" && state.selectedFolderId === "uncategorized") ||
-      (fid !== "all" && fid !== "uncategorized" && fid == state.selectedFolderId)
+      (fid !== "all" && fid == state.selectedFolderId)
     );
   });
 
   document.getElementById("count-all").textContent = state.comandosCache.length;
-  const uncatCount = state.comandosCache.filter(function (c) {
-    const ids = state.commandFolders[c.com_id];
-    return !ids || ids.length === 0;
-  }).length;
-  document.getElementById("count-uncategorized").textContent = uncatCount;
 }
 
 export async function addFolder(name, description) {
@@ -158,9 +152,6 @@ export function hideModal() {
 export function initFolders() {
   document.querySelector('[data-folder-id="all"]').addEventListener("click", function () {
     selectFolder("all");
-  });
-  document.querySelector('[data-folder-id="uncategorized"]').addEventListener("click", function () {
-    selectFolder("uncategorized");
   });
 
   document.getElementById("add-folder-btn").addEventListener("click", function () {

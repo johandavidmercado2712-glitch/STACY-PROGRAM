@@ -1,4 +1,6 @@
-export const API_BASE = "http://localhost:8000";
+import { getCookie } from './cookie.js';
+
+export const API_BASE = "http://52.87.195.200:8000";
 
 export async function login(username, password) {
   const formData = new URLSearchParams();
@@ -26,13 +28,15 @@ export async function register(username, apellidos, correo, password) {
 }
 
 function authHeaders() {
-  const token = localStorage.getItem("access_token");
+  let token = getCookie("access_token");
+  if (!token) token = localStorage.getItem("access_token_backup");
+  console.log("[DEBUG] authHeaders token found:", !!token, "cookie:", !!getCookie("access_token"));
   if (!token) return {};
   return { "Authorization": "Bearer " + token };
 }
 
 export async function fetchComandos() {
-  const res = await fetch(API_BASE + "/historial/todos");
+  const res = await fetch(API_BASE + "/historial/todos", { headers: authHeaders() });
   if (!res.ok) throw new Error("Respuesta invalida del servidor");
   return await res.json();
 }
@@ -95,5 +99,46 @@ export async function updateCommandDescription(car_id, com_id, descripcion) {
 export async function fetchAssignments() {
   const res = await fetch(API_BASE + "/carpetas/asignaciones", { headers: authHeaders() });
   if (!res.ok) throw new Error("Error al obtener asignaciones");
+  return await res.json();
+}
+
+export async function fetchUserProfile() {
+  const res = await fetch(API_BASE + "/users/profile", { headers: authHeaders() });
+  if (!res.ok) throw new Error("Error al obtener perfil");
+  return await res.json();
+}
+
+export async function fetchNotas() {
+  const res = await fetch(API_BASE + "/notas", { headers: authHeaders() });
+  if (!res.ok) throw new Error("Error al obtener notas");
+  return await res.json();
+}
+
+export async function createNota(titulo, contenido) {
+  const res = await fetch(API_BASE + "/notas", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...authHeaders() },
+    body: JSON.stringify({ titulo, contenido }),
+  });
+  if (!res.ok) throw new Error("Error al crear nota");
+  return await res.json();
+}
+
+export async function updateNota(not_id, titulo, contenido) {
+  const res = await fetch(API_BASE + "/notas/" + not_id, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json", ...authHeaders() },
+    body: JSON.stringify({ titulo, contenido }),
+  });
+  if (!res.ok) throw new Error("Error al actualizar nota");
+  return await res.json();
+}
+
+export async function deleteNota(not_id) {
+  const res = await fetch(API_BASE + "/notas/" + not_id, {
+    method: "DELETE",
+    headers: authHeaders(),
+  });
+  if (!res.ok) throw new Error("Error al eliminar nota");
   return await res.json();
 }

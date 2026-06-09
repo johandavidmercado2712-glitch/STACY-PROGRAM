@@ -90,7 +90,7 @@ def obtener_usuario_por_username(username: str):
         cursor = conexion.cursor(dictionary=True)
         cursor.execute(
             """
-            SELECT USU_ID, USU_USERNAME, USU_APELLIDOS, USU_CORREO, USU_PASSWORD_HASH, USU_ACTIVO
+            SELECT USU_ID, USU_USERNAME, USU_APELLIDOS, USU_CORREO, USU_PASSWORD_HASH, USU_ACTIVO, USU_CREATED_AT
             FROM usuarios
             WHERE USU_USERNAME = %s
             LIMIT 1

@@ -117,5 +117,6 @@ def listar_comandos_de_carpeta(
     car_id: int,
     my_user: Annotated[dict, Depends(get_current_user)],
 ):
-    comandos = obtener_comandos_de_carpeta(car_id)
+    usu_id = get_usu_id(my_user)
+    comandos = obtener_comandos_de_carpeta(car_id, usu_id=usu_id)
     return {"comandos": comandos}

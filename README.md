@@ -1,127 +1,177 @@
-# STACY-PROGRAM
-Sistema para capturar, consultar y exponer el historial de comandos de terminal mediante CLI y API con FastAPI.
+# STACY - Sistema de Historial de Comandos
 
-## Descripción
-`STACY-PROGRAM` obtiene comandos ejecutados en terminal (Linux/macOS/Windows), les agrega metadata y permite:
-- Consultarlos desde consola.
-- Exponerlos vía API REST.
-- Guardarlos en base de datos MySQL.
+API REST para capturar, almacenar y consultar el historial de comandos de terminal con autenticación JWT, OAuth2 con Google y organización por carpetas.
+
+## Stack
+
+- **Backend:** Python + FastAPI
+- **Base de datos:** MySQL
+- **Autenticación:** JWT (PBKDF2 + SHA256) y Google OAuth2
+- **Frontend:** HTML + CSS + JavaScript vanilla
 
 ## Requisitos
-- Python 3.8+
-- MySQL accesible desde tu entorno
-- `pip`
-- Activar Entorno Virtual el linux (source .venv/bin/activate) en windows (activate venv python) 
 
-## Dependencias
-Instaladas desde `backend/requirements.txt`:
-- fastapi
-- uvicorn
-- psutil
-- mysql-connector-python
-- python-dotenv
-- PyJWT
-- typing_extensions
-- python-multipart
+- Python 3.12+
+- MySQL 8.0+
+- pip
 
 ## Instalación
+
 ```bash
-cd backend
+git clone <tu-repo>
+cd STACY-PROGRAM/backend
+python3 -m venv venv
+source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-## Configuración de entorno
-Crea o edita `backend/.env` con:
-```
-SECRET_KEY=STACY
-DB_HOST=172.30.48.1 o el localhost
-DB_USER=root
-DB_PASSWORD=
-DB_PORT=3307
-DB_NAME=proyecto_gwen
+## Configuración
+
+Copia el archivo de entorno:
+
+```bash
+cp .env.example .env
 ```
 
-Notas:
-- Si tu MySQL está local en tu misma máquina, usa `DB_HOST=localhost`.
-- Evita duplicar variables (por ejemplo, dos veces `DB_HOST`).
+Edita `.env` con tus datos:
+
+| Variable | Descripción |
+|---|---|
+| `SECRET_KEY` | Clave secreta para firmar JWT |
+| `DB_HOST` | Host de MySQL |
+| `DB_USER` | Usuario de MySQL |
+| `DB_PASSWORD` | Contraseña de MySQL |
+| `DB_PORT` | Puerto de MySQL (por defecto 3306) |
+| `DB_NAME` | Nombre de la base de datos |
+| `GOOGLE_CLIENT_ID` | Client ID de Google OAuth |
+| `GOOGLE_CLIENT_SECRET` | Client Secret de Google OAuth |
+| `GOOGLE_REDIRECT_URI` | URL de callback para Google OAuth |
+| `FRONTEND_URL` | URL del frontend |
 
 ## Ejecución
 
-### 1) Modo consola (últimos comandos)
+### API
+
+```bash
+uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+```
+
+### Crear usuario desde consola
+
+```bash
+python crear_usuario.py
+```
+
+### CLI: últimos comandos
+
 ```bash
 python TerminalComando.py
 ```
 
-### 2) Modo consola (historial completo)
+### CLI: historial completo
+
 ```bash
 python TerminalComandoCompleto.py
 ```
 
-### 3) API web (FastAPI)
-```bash
-uvicorn main:app --reload
+## Endpoints
+
+### Autenticación
+
+| Método | Ruta | Auth | Descripción |
+|---|---|---|---|
+| `POST` | `/token` | No | Login (form-data: username, password) |
+| `POST` | `/register` | No | Registro de usuario |
+| `GET` | `/auth/google/login` | No | Redirige a Google OAuth |
+| `GET` | `/auth/google/callback` | No | Callback de Google OAuth |
+| `GET` | `/users/profile` | Bearer | Perfil del usuario autenticado |
+
+### Historial
+
+| Método | Ruta | Auth | Descripción |
+|---|---|---|---|
+| `GET` | `/` | No | Health check |
+| `GET` | `/historial/ultimos` | No | Últimos 11 comandos |
+| `GET` | `/historial/todos` | No | Todos los comandos |
+| `GET` | `/historial/comandos/{nombre}` | No | Buscar comando por nombre |
+
+### Carpetas
+
+| Método | Ruta | Auth | Descripción |
+|---|---|---|---|
+| `POST` | `/carpetas` | Bearer | Crear carpeta |
+| `GET` | `/carpetas` | Bearer | Listar carpetas |
+| `DELETE` | `/carpetas/{id}` | Bearer | Eliminar carpeta |
+| `POST` | `/carpetas/asignar` | Bearer | Asignar comando a carpeta |
+| `POST` | `/carpetas/desasignar` | Bearer | Desasignar comando |
+| `PUT` | `/carpetas/descripcion` | Bearer | Actualizar descripción |
+| `GET` | `/carpetas/asignaciones` | Bearer | Obtener asignaciones |
+| `GET` | `/carpetas/{id}/comandos` | Bearer | Comandos de una carpeta |
+
+## Despliegue en producción
+
+### Con systemd
+
+Crear `/etc/systemd/system/stacy-api.service`:
+
+```ini
+[Unit]
+Description=STACY API
+After=network.target
+
+[Service]
+User=ubuntu
+WorkingDirectory=/home/ubuntu/STACY-PROGRAM/backend
+Environment=PATH=/home/ubuntu/STACY-PROGRAM/backend/venv/bin
+ExecStart=/home/ubuntu/STACY-PROGRAM/backend/venv/bin/uvicorn main:app --host 0.0.0.0 --port 8000
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
 ```
 
-Servidor local:
-- http://127.0.0.1:8000
-
-## Endpoints disponibles
-
-### GET /
-Respuesta básica de estado.
-
-### GET /historial/ultimos
-Devuelve los últimos comandos (lógica actual limitada a 11).
-
-### GET /historial/todos
-Devuelve todo el historial disponible.
-
-### POST /token
-Login de usuario (devuelve JWT).
-
-### GET /users/profile
-Perfil del usuario autenticado (requiere token JWT).
-
-## Pruebas rápidas con curl
 ```bash
-curl http://127.0.0.1:8000/
-curl http://127.0.0.1:8000/historial/ultimos
-curl http://127.0.0.1:8000/historial/todos
+sudo systemctl daemon-reload
+sudo systemctl enable stacy-api
+sudo systemctl start stacy-api
 ```
 
 ## Estructura del proyecto
+
 ```
-backend/
-├── app/
-│   ├── controllers/
-│   │   ├── historial_controller.py
-│   │   └── usuario_controller.py
-│   ├── models/
-│   │   ├── historial_modelo.py
-│   │   └── usuario_modelo.py
-│   └── views/
-│       ├── historial_view.py
-│       └── usuario_view.py
-├── auth/
-│   └── auth.py
-├── config/
-│   ├── db.py
-│   └── usuarioDB.py
-├── routes/
-│   └── web.py
-├── main.py
-├── TerminalComando.py
-├── TerminalComandoCompleto.py
-└── requirements.txt
+STACY-PROGRAM/
+├── backend/
+│   ├── app/
+│   │   ├── controllers/     # Lógica de controladores
+│   │   ├── models/          # Modelos de datos
+│   │   └── views/           # Vistas de consola
+│   ├── auth/
+│   │   ├── auth.py          # JWT + Google OAuth
+│   │   └── hashing.py       # PBKDF2 password hashing
+│   ├── config/
+│   │   ├── db.py            # Conexión MySQL y CRUD comandos
+│   │   ├── usuarioDB.py     # CRUD usuarios
+│   │   └── carpetasBD.py    # CRUD carpetas
+│   ├── routes/
+│   │   └── carpetas.py      # Endpoints de carpetas
+│   ├── main.py              # Punto de entrada FastAPI
+│   ├── crear_usuario.py     # Script para crear usuarios
+│   ├── requirements.txt     # Dependencias
+│   └── .env                 # Variables de entorno
+├── frontend/
+│   ├── index.html
+│   ├── styles.css
+│   └── js/
+│       ├── api.js
+│       ├── app.js
+│       ├── auth.js
+│       ├── commands.js
+│       ├── folders.js
+│       ├── state.js
+│       └── theme.js
+└── README.md
 ```
 
-## Notas técnicas
-- En zsh, el historial puede traer prefijos tipo `: 1779293328:0;`.
-- La app puede limpiarlos para guardar solo el comando real.
-- La fecha que se guarda actualmente se genera al momento de procesar cada comando.
+## Licencia
 
-## Tecnologías
-- Python
-- FastAPI
-- MySQL
-- Arquitectura tipo MVC
+MIT
