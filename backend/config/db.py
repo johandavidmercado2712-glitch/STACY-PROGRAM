@@ -7,19 +7,19 @@ load_dotenv()
 STACY_ENV = os.getenv("STACY_ENV", "prod")
 if STACY_ENV == "local":
     DB_CONFIG = {
-        "user": os.getenv("LOCAL_DB_USER"),
-        "password": os.getenv("LOCAL_DB_PASSWORD"),
-        "host": os.getenv("LOCAL_DB_HOST"),
-        "database": os.getenv("LOCAL_DB_NAME"),
-        "port": os.getenv("LOCAL_DB_PORT"),
+        "user": os.getenv("LOCAL_DB_USER") or os.getenv("DB_USER"),
+        "password": os.getenv("LOCAL_DB_PASSWORD") or os.getenv("DB_PASSWORD"),
+        "host": os.getenv("LOCAL_DB_HOST") or os.getenv("DB_HOST"),
+        "database": os.getenv("LOCAL_DB_NAME") or os.getenv("DB_NAME"),
+        "port": os.getenv("LOCAL_DB_PORT") or os.getenv("DB_PORT"),
     }
 else:
     DB_CONFIG = {
-        "user": os.getenv("PROD_DB_USER"),
-        "password": os.getenv("PROD_DB_PASSWORD"),
-        "host": os.getenv("PROD_DB_HOST"),
-        "database": os.getenv("PROD_DB_NAME"),
-        "port": os.getenv("PROD_DB_PORT"),
+        "user": os.getenv("PROD_DB_USER") or os.getenv("DB_USER"),
+        "password": os.getenv("PROD_DB_PASSWORD") or os.getenv("DB_PASSWORD"),
+        "host": os.getenv("PROD_DB_HOST") or os.getenv("DB_HOST"),
+        "database": os.getenv("PROD_DB_NAME") or os.getenv("DB_NAME"),
+        "port": os.getenv("PROD_DB_PORT") or os.getenv("DB_PORT"),
     }
 
 
