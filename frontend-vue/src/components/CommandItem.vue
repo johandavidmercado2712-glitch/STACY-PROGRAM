@@ -124,7 +124,7 @@ function onCardClick() {
   <div @click="onCardClick" class="group relative flex flex-col gap-2 px-4 py-3 bg-surface border border-border rounded-xl transition-all hover:border-accent/30 hover:shadow-md hover:-translate-y-0.5 stagger-enter-active cursor-pointer">
     <div class="flex items-center gap-2 min-w-0">
       <span class="text-[0.6rem] font-semibold text-text-secondary bg-bg border border-border rounded-md px-1.5 py-0.5 flex items-center gap-1 flex-shrink-0">
-        <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+        <lord-icon src="https://media.lordicon.com/assets/icons/editor/code.json" class="current-color" trigger="hover" style="width:10px;height:10px"></lord-icon>
         {{ extractMaquina(item.ruta) || 'Servidor' }}
       </span>
       <span class="text-[0.65rem] text-text-secondary/60 tabular-nums whitespace-nowrap">{{ formatearHora(item.fecha) }}</span>
@@ -132,13 +132,13 @@ function onCardClick() {
     <div class="flex items-start gap-2 min-w-0">
       <code class="font-mono text-sm bg-accent-dim/50 rounded-lg px-3 py-2 text-accent flex-1 min-w-0 overflow-hidden text-ellipsis whitespace-nowrap border border-accent/10 leading-relaxed">{{ item.comando || '(sin comando)' }}</code>
       <button @click.stop="copiarComando(item.comando)" class="flex-shrink-0 w-8 h-8 flex items-center justify-center bg-bg border border-border rounded-lg cursor-pointer transition-all hover:bg-accent-dim hover:border-accent/40 active:scale-90 mt-0.5" :title="copiedId === item.com_id ? 'Copiado!' : 'Copiar comando'" type="button">
-        <svg v-if="copiedId === item.com_id" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-accent"><polyline points="20 6 9 17 4 12"/></svg>
-        <svg v-else viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-text-secondary"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+        <lord-icon v-if="copiedId === item.com_id" src="https://cdn.lordicon.com/rmkpgtpt.json" trigger="hover" colors="primary:#f59e0b" style="width:15px;height:15px"></lord-icon>
+        <lord-icon v-else src="https://media.lordicon.com/assets/icons/editor/copy.json" class="current-color text-text-secondary" trigger="hover" style="width:15px;height:15px"></lord-icon>
       </button>
     </div>
     <div class="flex items-center gap-2">
       <span class="text-[0.65rem] text-text-secondary/50 flex items-center gap-1 overflow-hidden text-ellipsis whitespace-nowrap flex-1 min-w-0">
-        <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+        <lord-icon src="https://media.lordicon.com/assets/icons/editor/code.json" class="current-color flex-shrink-0" trigger="hover" style="width:10px;height:10px"></lord-icon>
         {{ limpiarRuta(item.ruta) || '(sin ruta)' }}
       </span>
       <div v-if="folderView" class="flex gap-1 flex-shrink-0">
@@ -146,7 +146,7 @@ function onCardClick() {
         <button @click.stop="quitarDeCarpeta" class="btn-folder-action btn-folder-action--danger text-xs" type="button">Quitar</button>
       </div>
       <button v-else @click.stop="mostrarAsignarCarpetas" class="text-[0.6rem] font-semibold text-accent bg-accent-dim rounded-full px-2 py-0.5 cursor-pointer whitespace-nowrap overflow-hidden text-ellipsis max-w-[130px] inline-block text-center transition-all hover:bg-accent-dim/80 border border-accent/20 flex-shrink-0 flex items-center gap-1" type="button">
-        <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+        <lord-icon src="https://media.lordicon.com/assets/icons/editor/code.json" colors="primary:#f59e0b" trigger="hover" style="width:10px;height:10px"></lord-icon>
         {{ (folders.commandFolders[item.com_id] || []).length ? (folders.commandFolders[item.com_id] || []).map(id => folders.folders.find(f => f.CAR_ID === id)?.CAR_NOMBRE).filter(Boolean).join(', ') : 'Sin carpeta' }}
       </button>
     </div>

@@ -56,7 +56,7 @@ function cerrarSesion() {
         </div>
         <div v-else class="text-xs text-text-secondary">Cargando...</div>
         <button @click="cerrarSesion" class="w-full flex items-center gap-2 px-3 py-2.5 bg-transparent border border-border rounded-lg text-danger text-sm font-semibold cursor-pointer hover:bg-danger/10 hover:border-danger transition-all" type="button">
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          <lord-icon src="https://cdn.lordicon.com/rmkpgtpt.json" class="current-color" trigger="hover" colors="primary:#f85149" style="width:16px;height:16px"></lord-icon>
           Cerrar sesion
         </button>
       </div>

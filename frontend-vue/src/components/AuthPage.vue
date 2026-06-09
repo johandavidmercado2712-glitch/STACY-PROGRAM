@@ -52,7 +52,7 @@ async function handleRegister() {
     <div class="bg-surface border border-border rounded-2xl w-full max-w-sm shadow-[0_16px_48px_rgba(0,0,0,0.35),0_4px_12px_rgba(0,0,0,0.15)] overflow-hidden relative z-1">
       <div class="bg-gradient-to-br from-accent-dim/30 to-transparent px-8 py-8 pb-6 text-center border-b border-border">
         <div class="inline-flex items-center justify-center w-13 h-13 rounded-xl bg-accent text-[#0d1117] mb-3 shadow-[0_4px_12px_rgba(245,158,11,0.3)]">
-          <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+          <lord-icon src="https://media.lordicon.com/assets/icons/editor/code.json" trigger="hover" colors="primary:#0d1117" style="width:28px;height:28px"></lord-icon>
         </div>
         <h1 class="m-0 text-2xl font-extrabold tracking-tight text-text">STACY</h1>
         <p class="mt-1 text-sm text-text-secondary font-medium">Historial de Comandos</p>
@@ -65,11 +65,11 @@ async function handleRegister() {
 
         <form v-if="isLogin" @submit.prevent="handleLogin" class="flex flex-col gap-3">
           <div class="relative flex items-center">
-            <svg class="absolute left-3 text-text-secondary opacity-60 pointer-events-none" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <lord-icon src="https://media.lordicon.com/assets/icons/main/user.json" trigger="morph" class="absolute left-3 text-text-secondary opacity-60 pointer-events-none current-color" style="width:18px;height:18px"></lord-icon>
             <input v-model="loginUser" type="text" placeholder="Usuario" required class="w-full py-2.5 pl-10 pr-3 bg-bg border border-border rounded-lg text-sm text-text outline-none transition-[border-color] focus:border-accent focus:shadow-[0_0_0_3px_var(--color-accent-dim)] placeholder:text-text-secondary/70" />
           </div>
           <div class="relative flex items-center">
-            <svg class="absolute left-3 text-text-secondary opacity-60 pointer-events-none" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            <lord-icon src="https://cdn.lordicon.com/lbjtvqiv.json" trigger="morph" class="absolute left-3 text-text-secondary opacity-60 pointer-events-none current-color" style="width:18px;height:18px"></lord-icon>
             <input v-model="loginPass" type="password" placeholder="Contrasena" required class="w-full py-2.5 pl-10 pr-3 bg-bg border border-border rounded-lg text-sm text-text outline-none transition-[border-color] focus:border-accent focus:shadow-[0_0_0_3px_var(--color-accent-dim)] placeholder:text-text-secondary/70" />
           </div>
           <button type="submit" class="py-2.5 text-sm font-bold border-none bg-accent text-[#0d1117] rounded-lg cursor-pointer transition-all hover:bg-accent-hover hover:shadow-[0_4px_16px_rgba(245,158,11,0.35)] active:scale-97 font-sans">Ingresar</button>
@@ -77,19 +77,19 @@ async function handleRegister() {
 
         <form v-else @submit.prevent="handleRegister" class="flex flex-col gap-3">
           <div class="relative flex items-center">
-            <svg class="absolute left-3 text-text-secondary opacity-60 pointer-events-none" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <lord-icon src="https://media.lordicon.com/assets/icons/main/user.json" trigger="morph" class="absolute left-3 text-text-secondary opacity-60 pointer-events-none current-color" style="width:18px;height:18px"></lord-icon>
             <input v-model="regUser" type="text" placeholder="Usuario" required class="w-full py-2.5 pl-10 pr-3 bg-bg border border-border rounded-lg text-sm text-text outline-none transition-[border-color] focus:border-accent focus:shadow-[0_0_0_3px_var(--color-accent-dim)] placeholder:text-text-secondary/70" />
           </div>
           <div class="relative flex items-center">
-            <svg class="absolute left-3 text-text-secondary opacity-60 pointer-events-none" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            <lord-icon src="https://media.lordicon.com/assets/icons/main/user.json" trigger="morph" class="absolute left-3 text-text-secondary opacity-60 pointer-events-none current-color" style="width:18px;height:18px"></lord-icon>
             <input v-model="regApellidos" type="text" placeholder="Apellidos" required class="w-full py-2.5 pl-10 pr-3 bg-bg border border-border rounded-lg text-sm text-text outline-none transition-[border-color] focus:border-accent focus:shadow-[0_0_0_3px_var(--color-accent-dim)] placeholder:text-text-secondary/70" />
           </div>
           <div class="relative flex items-center">
-            <svg class="absolute left-3 text-text-secondary opacity-60 pointer-events-none" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            <lord-icon src="https://media.lordicon.com/assets/icons/main/user.json" trigger="morph" class="absolute left-3 text-text-secondary opacity-60 pointer-events-none current-color" style="width:18px;height:18px"></lord-icon>
             <input v-model="regCorreo" type="email" placeholder="Correo" required class="w-full py-2.5 pl-10 pr-3 bg-bg border border-border rounded-lg text-sm text-text outline-none transition-[border-color] focus:border-accent focus:shadow-[0_0_0_3px_var(--color-accent-dim)] placeholder:text-text-secondary/70" />
           </div>
           <div class="relative flex items-center">
-            <svg class="absolute left-3 text-text-secondary opacity-60 pointer-events-none" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            <lord-icon src="https://cdn.lordicon.com/lbjtvqiv.json" trigger="morph" class="absolute left-3 text-text-secondary opacity-60 pointer-events-none current-color" style="width:18px;height:18px"></lord-icon>
             <input v-model="regPass" type="password" placeholder="Contrasena" required class="w-full py-2.5 pl-10 pr-3 bg-bg border border-border rounded-lg text-sm text-text outline-none transition-[border-color] focus:border-accent focus:shadow-[0_0_0_3px_var(--color-accent-dim)] placeholder:text-text-secondary/70" />
           </div>
           <button type="submit" class="py-2.5 text-sm font-bold border-none bg-accent text-[#0d1117] rounded-lg cursor-pointer transition-all hover:bg-accent-hover hover:shadow-[0_4px_16px_rgba(245,158,11,0.35)] active:scale-97 font-sans">Registrarse</button>

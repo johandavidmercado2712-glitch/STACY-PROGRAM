@@ -52,7 +52,7 @@ function formatRelTime(dateStr) {
   <div>
     <div class="flex items-center justify-between mb-2">
       <h3 class="text-xs font-bold uppercase tracking-wide text-text-secondary m-0 flex items-center gap-1.5">
-        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+        <lord-icon src="https://media.lordicon.com/assets/icons/editor/edit.json" class="current-color" trigger="hover" style="width:14px;height:14px"></lord-icon>
         Notas
       </h3>
       <button @click="openEditor(null)" class="w-7 h-7 bg-transparent border border-border text-text-secondary rounded-lg cursor-pointer text-lg leading-none flex items-center justify-center hover:bg-accent-dim hover:border-accent hover:text-accent hover:scale-108 active:scale-95 transition-all" type="button" title="Nueva nota">+</button>
@@ -62,7 +62,7 @@ function formatRelTime(dateStr) {
     <div v-else class="flex flex-col gap-1.5">
       <div v-for="n in notes.notas" :key="n.NOT_ID" @click="openEditor(n)" class="group relative flex items-start gap-3 px-3 py-2.5 bg-surface border border-border rounded-xl cursor-pointer transition-all hover:border-accent/30 hover:shadow-md hover:-translate-y-0.5">
         <div class="flex-shrink-0 w-8 h-8 rounded-lg bg-accent-dim flex items-center justify-center mt-0.5">
-          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-accent"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+          <lord-icon src="https://media.lordicon.com/assets/icons/editor/edit.json" trigger="hover" colors="primary:#f59e0b" style="width:15px;height:15px"></lord-icon>
         </div>
         <div class="min-w-0 flex-1">
           <div class="flex items-start justify-between gap-2">

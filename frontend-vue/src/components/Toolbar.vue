@@ -138,7 +138,7 @@ Write-Host "Listo."
         <button @click="commands.setVista('all')" :class="['text-xs px-2.5 py-1 rounded-lg border-none font-semibold cursor-pointer transition-all font-sans', commands.vistaActual === 'all' ? 'bg-bg text-accent shadow-sm' : 'bg-transparent text-text-secondary hover:text-text']" type="button">Todos</button>
       </div>
       <button @click="commands.cargar" class="btn-outline text-xs flex items-center gap-1" type="button">
-        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+        <lord-icon src="https://media.lordicon.com/assets/icons/editor/update.json" class="current-color" trigger="hover" style="width:14px;height:14px"></lord-icon>
         Actualizar
       </button>
       <button @click="mostrarGuiaDescarga" class="btn-accent text-xs whitespace-nowrap" type="button">Bajar comandos de este equipo</button>
