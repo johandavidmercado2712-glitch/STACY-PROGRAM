@@ -1,4 +1,5 @@
 import os
+from datetime import datetime
 from mysql.connector import connect, Error 
 from dotenv import load_dotenv
 
@@ -158,34 +159,36 @@ def importar_comandos(comandos: list, usu_id: int):
             existentes[row["COM_NOMBRE"]] = row["COM_RUTA"] or ""
 
         insertados = 0
+        nuevos = []
+        actualizados = []
+
         for cmd in comandos:
             nombre = cmd.get("comando", "").strip()
             if not nombre:
                 continue
             ruta = cmd.get("ruta", "") or ""
-            fecha = cmd.get("fecha")
+            fecha = cmd.get("fecha") or None
 
             if nombre in existentes:
                 ruta_vieja = existentes[nombre]
                 if "[MAQUINA:" not in ruta_vieja and "[MAQUINA:" in ruta:
-                    cursor.execute(
-                        "UPDATE comandos SET COM_RUTA = %s WHERE COM_NOMBRE = %s AND USU_ID = %s",
-                        (ruta, nombre, usu_id),
-                    )
+                    actualizados.append((ruta, nombre, usu_id))
                     insertados += 1
                 continue
 
-            if fecha:
-                cursor.execute(
-                    "INSERT INTO comandos (COM_NOMBRE, COM_FECHA, COM_RUTA, USU_ID) VALUES (%s, %s, %s, %s)",
-                    (nombre, fecha, ruta, usu_id),
-                )
-            else:
-                cursor.execute(
-                    "INSERT INTO comandos (COM_NOMBRE, COM_FECHA, COM_RUTA, USU_ID) VALUES (%s, NOW(), %s, %s)",
-                    (nombre, ruta, usu_id),
-                )
+            nuevos.append((nombre, fecha, ruta, usu_id))
             insertados += 1
+
+        if actualizados:
+            cursor.executemany(
+                "UPDATE comandos SET COM_RUTA = %s WHERE COM_NOMBRE = %s AND USU_ID = %s",
+                actualizados,
+            )
+        if nuevos:
+            cursor.executemany(
+                "INSERT INTO comandos (COM_NOMBRE, COM_FECHA, COM_RUTA, USU_ID) VALUES (%s, %s, %s, %s)",
+                [(n[0], n[1] if n[1] else datetime.now().strftime('%Y-%m-%d %H:%M:%S'), n[2], n[3]) for n in nuevos],
+            )
 
         conexion.commit()
         cursor.close()
@@ -230,6 +233,28 @@ def obtener_comandos(limite: int = None, usu_id: int = None):
     except Error as e:
         print(f"Error al obtener comandos: {e}")
         return []
+
+
+def actualizar_comando_por_id(com_id: int, nuevo_nombre: str, usu_id: int):
+    """Actualiza el nombre de un comando por su ID."""
+    try:
+        conexion = connect(**DB_CONFIG)
+        cursor = conexion.cursor()
+        cursor.execute(
+            "UPDATE comandos SET COM_NOMBRE = %s WHERE COM_ID = %s AND USU_ID = %s",
+            (nuevo_nombre, com_id, usu_id),
+        )
+        conexion.commit()
+        return cursor.rowcount > 0
+    except Error as e:
+        print(f"Error al actualizar comando: {e}")
+        return False
+    finally:
+        try:
+            cursor.close()
+            conexion.close()
+        except Exception:
+            pass
 
 
 # Crear tabla al importar

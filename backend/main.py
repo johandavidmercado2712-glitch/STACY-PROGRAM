@@ -8,7 +8,8 @@ from auth.auth import get_current_user
 from auth.auth import router as auth_router
 from routes.carpetas import router as carpetas_router
 from routes.notas import router as notas_router
-from config.db import DB_CONFIG, obtener_comando_por_nombre, obtener_comandos, importar_comandos
+from routes.google_auth import router as google_auth_router
+from config.db import DB_CONFIG, obtener_comando_por_nombre, obtener_comandos, importar_comandos, actualizar_comando_por_id
 from config.carpetasBD import crear_tablas_carpetas
 from config.notasBD import crear_tabla_notas
 from config.usuarioDB import obtener_usuario_por_username
@@ -18,6 +19,7 @@ app = FastAPI(title="Historial de Comandos API", version="1.0.0")
 app.include_router(auth_router)
 app.include_router(carpetas_router)
 app.include_router(notas_router)
+app.include_router(google_auth_router)
 crear_tablas_carpetas()
 crear_tabla_notas()
 origins =[
@@ -151,6 +153,19 @@ class ComandoImportar(BaseModel):
 
 class ImportarRequest(BaseModel):
     comandos: list[ComandoImportar]
+
+
+@app.put("/comandos/{com_id}")
+def editar_comando(
+    com_id: int,
+    data: ComandoImportar,
+    my_user: Annotated[dict, Depends(get_current_user)],
+):
+    usu_id = get_usu_id(my_user)
+    ok = actualizar_comando_por_id(com_id, data.comando, usu_id)
+    if not ok:
+        raise HTTPException(status_code=404, detail="Comando no encontrado")
+    return {"estado": "éxito", "mensaje": "Comando actualizado"}
 
 
 @app.post("/comandos/importar")
