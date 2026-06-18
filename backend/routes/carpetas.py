@@ -8,6 +8,7 @@ from config.carpetasBD import (
     guardar_carpeta,
     obtener_carpetas,
     eliminar_carpeta,
+    actualizar_carpeta,
     asignar_comando,
     desasignar_comando,
     obtener_asignaciones,
@@ -19,6 +20,11 @@ router = APIRouter()
 
 
 class CrearCarpetaRequest(BaseModel):
+    nombre: str
+    descripcion: str = ""
+
+
+class ActualizarCarpetaRequest(BaseModel):
     nombre: str
     descripcion: str = ""
 
@@ -58,6 +64,19 @@ def listar_carpetas(my_user: Annotated[dict, Depends(get_current_user)]):
     usu_id = get_usu_id(my_user)
     carpetas = obtener_carpetas(usu_id)
     return {"carpetas": carpetas}
+
+
+@router.put("/carpetas/{car_id}")
+def editar_carpeta(
+    car_id: int,
+    data: ActualizarCarpetaRequest,
+    my_user: Annotated[dict, Depends(get_current_user)],
+):
+    usu_id = get_usu_id(my_user)
+    ok = actualizar_carpeta(car_id, data.nombre, data.descripcion, usu_id)
+    if not ok:
+        raise HTTPException(status_code=404, detail="Carpeta no encontrada")
+    return {"mensaje": "Carpeta actualizada"}
 
 
 @router.delete("/carpetas/{car_id}")

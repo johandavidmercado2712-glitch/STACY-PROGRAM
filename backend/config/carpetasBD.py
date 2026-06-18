@@ -202,6 +202,27 @@ def actualizar_descripcion_comando(car_id, com_id, descripcion):
             pass
 
 
+def actualizar_carpeta(car_id, nombre, descripcion, usu_id):
+    try:
+        conexion = connect(**DB_CONFIG)
+        cursor = conexion.cursor()
+        cursor.execute(
+            "UPDATE carpetas SET CAR_NOMBRE = %s, CAR_DESCRIPCION = %s WHERE CAR_ID = %s AND USU_ID = %s",
+            (nombre, descripcion, car_id, usu_id),
+        )
+        conexion.commit()
+        return cursor.rowcount > 0
+    except Error as e:
+        print(f"Error al actualizar carpeta: {e}")
+        return False
+    finally:
+        try:
+            cursor.close()
+            conexion.close()
+        except Exception:
+            pass
+
+
 def obtener_comandos_de_carpeta(car_id, usu_id=None):
     try:
         conexion = connect(**DB_CONFIG)
@@ -209,7 +230,7 @@ def obtener_comandos_de_carpeta(car_id, usu_id=None):
         if usu_id:
             cursor.execute(
                 """
-                SELECT c.* FROM comandos c
+                SELECT c.*, cc.CC_DESCRIPCION FROM comandos c
                 JOIN comando_carpeta cc ON c.COM_ID = cc.COM_ID
                 JOIN carpetas car ON cc.CAR_ID = car.CAR_ID
                 WHERE cc.CAR_ID = %s AND car.USU_ID = %s
@@ -219,7 +240,7 @@ def obtener_comandos_de_carpeta(car_id, usu_id=None):
         else:
             cursor.execute(
                 """
-                SELECT c.* FROM comandos c
+                SELECT c.*, cc.CC_DESCRIPCION FROM comandos c
                 JOIN comando_carpeta cc ON c.COM_ID = cc.COM_ID
                 WHERE cc.CAR_ID = %s
                 """,
