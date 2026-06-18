@@ -30,7 +30,8 @@ origins =[
     "http://127.0.0.1:5501",
     "http://52.87.195.200:5500",
     "http://52.87.195.200:8000",
-    
+    "http://stacyprogram.online",
+    "http://stacyprogram.online:8000",
 ]
 
 def get_usu_id(my_user: dict) -> int:
