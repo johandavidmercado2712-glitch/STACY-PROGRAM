@@ -26,6 +26,9 @@ function updateToggleIcon() {
 }
 
 export function initTheme() {
+  const saved = localStorage.getItem("stacy_theme");
+  const prefers = window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+  document.documentElement.setAttribute("data-theme", saved || prefers);
   const btn = document.getElementById("theme-toggle");
   if (btn) {
     btn.addEventListener("click", toggleTheme);

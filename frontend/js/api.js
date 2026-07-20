@@ -1,5 +1,3 @@
-import { getCookie } from './cookie.js';
-
 const _host = window.location.hostname;
 export const API_BASE = (_host === "localhost" || _host === "127.0.0.1")
   ? `http://${_host}:8000`
@@ -31,9 +29,8 @@ export async function register(username, apellidos, correo, password) {
 }
 
 function authHeaders() {
-  const token = getCookie("access_token");
-  if (!token) return {};
-  return { "Authorization": "Bearer " + token };
+  // El JWT se envia en la cookie HttpOnly (Secure, SameSite=Strict); no va en header.
+  return {};
 }
 
 export async function fetchComandos() {

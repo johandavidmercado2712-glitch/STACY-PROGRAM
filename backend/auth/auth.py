@@ -7,9 +7,9 @@ import httpx #para hacer peticiones a google. en pocas palabras un request
 import time #para expirar los codigos de intercambio
 from uuid import uuid4 # para generar id unicos aleatorios 
 from dotenv import load_dotenv #para cargar y leer las vriables de entorno 
-from fastapi import APIRouter, Depends, HTTPException, Cookie
+from fastapi import APIRouter, Depends, HTTPException, Cookie, Request, Response
 from fastapi.responses import RedirectResponse #para el flujo de google y redirigir a los usuarios a otra url 
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi.security import OAuth2PasswordRequestForm
 from pydantic import BaseModel, Field # para validar y estructurar los datos 
 from config.usuarioDB import obtener_usuario_por_username, guardar_usuario, crear_tabla_usuarios
 from auth.hashing import hash_password, verify_password
@@ -33,7 +33,7 @@ USERINFO_URL = "https://www.googleapis.com/oauth2/v2/userinfo" #donde obtienes e
 
 
 router = APIRouter()
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/token")#define como extraer cada peticion
+oauth2_scheme = None  # el JWT se lee del header Authorization o de la cookie HttpOnly (ver get_current_user)
 
 # Almacén temporal para códigos de intercambio OAuth (en producción usar Redis)
 _exchange_codes: dict[str, dict] = {}
@@ -57,7 +57,15 @@ def decode_token(token: str) -> dict: #verific y dcodifica un token si expiro o 
         raise HTTPException(status_code=401, detail="Token invalido")
 
 
-def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]) -> dict:#Extrae el token del header y devuelve los datos del usuario. 
+def get_current_user(request: Request) -> dict:#Extrae el JWT del header Authorization o de la cookie HttpOnly y devuelve los datos del usuario. 
+    token = None
+    auth = request.headers.get("Authorization")
+    if auth and auth.startswith("Bearer "):
+        token = auth[len("Bearer "):]
+    if not token:
+        token = request.cookies.get("access_token")
+    if not token:
+        raise HTTPException(status_code=401, detail="No autenticado")
     return decode_token(token)
 
 
@@ -82,7 +90,7 @@ def register(data: RegisterRequest):
 
 
 @router.post("/token")#busca el usuario en la BD , verifica la contrasena con el hash, verifica que el usuario este activo, genera y devueve el JTW
-def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
+def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()], request: Request, response: Response):
     user = obtener_usuario_por_username(form_data.username)
     if not user:
         raise HTTPException(status_code=401, detail="Credenciales Invalidas")
@@ -91,6 +99,15 @@ def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
     if user["USU_ACTIVO"] != 1:
         raise HTTPException(status_code=403, detail="Usuario inactivo")
     token = create_access_token({"sub": user["USU_USERNAME"]})
+    response.set_cookie(
+        key="access_token",
+        value=token,
+        httponly=True,
+        secure=(request.url.scheme == "https"),
+        samesite="strict",
+        path="/",
+        max_age=3600,
+    )
     return {"access_token": token, "token_type": "bearer"}
 
 

@@ -20,19 +20,18 @@ export function getTokenUser() {
 }
 
 export function setToken(token, username) {
-  setCookie(TOKEN_KEY, token);
+  // El JWT vive en una cookie HttpOnly (seteada por el backend); solo guardamos
+  // el usuario en una cookie legible para la UI. Nunca almacenamos el JWT en JS.
   setCookie(USER_KEY, username);
   actualizarUI();
 }
 
 export function clearToken() {
-  deleteCookie(TOKEN_KEY);
   deleteCookie(USER_KEY);
   actualizarUI();
 }
 
 export function actualizarUI() {
-  let token = getToken();
   let user = getTokenUser();
   const navbar = document.getElementById("navbar");
   const authWrapper = document.getElementById("auth-wrapper");

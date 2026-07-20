@@ -12,7 +12,7 @@ Flujo:
 8. Devuelve { access_token, username, email }
 """
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Request, Response
 from pydantic import BaseModel
 import httpx
 from uuid import uuid4
@@ -45,7 +45,7 @@ class GoogleExchangeResponse(BaseModel):
 
 
 @router.post("/auth/google/exchange", response_model=GoogleExchangeResponse)
-def google_exchange(data: GoogleExchangeRequest):
+def google_exchange(data: GoogleExchangeRequest, request: Request, response: Response):
     # 1. Canjear el código por tokens con Google
     token_data = {
         "code": data.code,
@@ -91,6 +91,16 @@ def google_exchange(data: GoogleExchangeRequest):
 
     # 4. Generar JWT de STACY
     token = create_access_token({"sub": user["USU_USERNAME"]})
+
+    response.set_cookie(
+        key="access_token",
+        value=token,
+        httponly=True,
+        secure=(request.url.scheme == "https"),
+        samesite="strict",
+        path="/",
+        max_age=3600,
+    )
 
     return GoogleExchangeResponse(
         access_token=token,
