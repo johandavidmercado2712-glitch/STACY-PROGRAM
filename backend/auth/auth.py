@@ -38,6 +38,9 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/token")#define como extraer cada
 # Almacén temporal para códigos de intercambio OAuth (en producción usar Redis)
 _exchange_codes: dict[str, dict] = {}
 
+# Puerto del server local de la extensión (VS Code), asociado al state de la auth.
+_oauth_ports: dict[str, dict] = {}
+
 
 def create_access_token(payload: dict) -> str: #hace una copia del token . le anade la fecha y la firma 
     data = payload.copy() #se hace una copia no se afecta al original
@@ -96,11 +99,14 @@ def google_login(port: int | None = None, state: str | None = None):
     # Si la extension pasa `state` lo usa (anti-CSRF); sino lo genera.
     if not state:
         state = str(uuid4())
-    # Si la extension pasa `port`, Google redirige el code al server local de la extension.
-    redirect_uri = f"http://127.0.0.1:{port}" if port else GOOGLE_REDIRECT_URI
+    # La extension pasa `port`: guardamos a que server local reenviar el code tras el callback.
+    # Google SIEMPRE redirige a la URL https registrada (GOOGLE_REDIRECT_URI); el loopback
+    # local (127.0.0.1) nunca se envia a Google, por eso no hay que registrarlo en Google Console.
+    if port:
+        _oauth_ports[state] = {"port": port, "exp": time.time() + 300}
     params = {
         "client_id": GOOGLE_CLIENT_ID, #el id con el cual google te reconoce
-        "redirect_uri": redirect_uri, #donde google mandara al usuario despues del login
+        "redirect_uri": GOOGLE_REDIRECT_URI, #url https registrada en Google Console
         "response_type": "code", #pide un codigo temporal de autorizacion 
         "scope": "openid email profile", #la informacion que le pides al usuario 
         "access_type": "online", #no necesitas acceso offline (sin refresh tokens)
@@ -129,8 +135,15 @@ def google_callback(
             status_code=400,
             detail="Validación de estado (CSRF) fallida o expirada."
         )
+    # Recuperar el puerto de la extension (si venia del flujo de VS Code).
+    entry = _oauth_ports.pop(state, None)
     exchange_code = _generar_codigo_intercambio(code)
-    redirect_url = f"{FRONTEND_URL}?code={exchange_code}"
+    if entry and entry.get("port"):
+        # Reenviar el code de intercambio al server local de la extension (loopback, sin Google).
+        redirect_url = f"http://127.0.0.1:{entry['port']}?code={exchange_code}&state={state}"
+    else:
+        # Flujo web: el frontend canjea el code.
+        redirect_url = f"{FRONTEND_URL}?code={exchange_code}"
     response = RedirectResponse(redirect_url)
     response.delete_cookie("oauth_state")
     return response
