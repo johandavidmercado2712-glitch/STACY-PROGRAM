@@ -84,6 +84,8 @@ python TerminalComandoCompleto.py
 | `POST` | `/register` | No | Registro de usuario |
 | `GET` | `/auth/google/login` | No | Redirige a Google OAuth |
 | `GET` | `/auth/google/callback` | No | Callback de Google OAuth |
+| `POST` | `/auth/exchange` | No | Canjea código de un solo uso por el JWT (evita filtrarlo en la URL) |
+| `POST` | `/auth/google/exchange` | No | Canjea código de Google (extensión VS Code) por el JWT |
 | `GET` | `/users/profile` | Bearer | Perfil del usuario autenticado |
 
 ### Historial
@@ -91,9 +93,11 @@ python TerminalComandoCompleto.py
 | Método | Ruta | Auth | Descripción |
 |---|---|---|---|
 | `GET` | `/` | No | Health check |
-| `GET` | `/historial/ultimos` | No | Últimos 11 comandos |
-| `GET` | `/historial/todos` | No | Todos los comandos |
-| `GET` | `/historial/comandos/{nombre}` | No | Buscar comando por nombre |
+| `GET` | `/historial/ultimos` | Bearer | Últimos 11 comandos del usuario |
+| `GET` | `/historial/todos` | Bearer | Todos los comandos del usuario |
+| `GET` | `/historial/comandos/{nombre}` | Bearer | Buscar comando por nombre (propios o sin dueño) |
+| `PUT` | `/comandos/{id}` | Bearer | Editar un comando propio |
+| `POST` | `/comandos/importar` | Bearer | Importar comandos desde otro equipo |
 
 ### Carpetas
 
@@ -107,6 +111,16 @@ python TerminalComandoCompleto.py
 | `PUT` | `/carpetas/descripcion` | Bearer | Actualizar descripción |
 | `GET` | `/carpetas/asignaciones` | Bearer | Obtener asignaciones |
 | `GET` | `/carpetas/{id}/comandos` | Bearer | Comandos de una carpeta |
+
+### Notas
+
+| Método | Ruta | Auth | Descripción |
+|---|---|---|---|
+| `GET` | `/notas` | Bearer | Listar notas del usuario |
+| `POST` | `/notas` | Bearer | Crear nota |
+| `GET` | `/notas/{id}` | Bearer | Obtener nota propia |
+| `PUT` | `/notas/{id}` | Bearer | Actualizar nota propia |
+| `DELETE` | `/notas/{id}` | Bearer | Eliminar nota propia |
 
 ## Despliegue en producción
 

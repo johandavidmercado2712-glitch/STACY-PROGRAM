@@ -149,11 +149,5 @@ def listar_comandos_de_carpeta(
     my_user: Annotated[dict, Depends(get_current_user)],
 ):
     usu_id = get_usu_id(my_user)
-<<<<<<< HEAD
     comandos = obtener_comandos_de_carpeta(car_id, usu_id=usu_id)
-=======
-    if not verificar_propietario_carpeta(car_id, usu_id):
-        raise HTTPException(status_code=403, detail="No autorizado para acceder a esta carpeta")
-    comandos = obtener_comandos_de_carpeta(car_id)
->>>>>>> 99aec01 (Implementacion De Seguridad)
     return {"comandos": comandos}

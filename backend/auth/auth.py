@@ -4,6 +4,7 @@ from urllib.parse import urlencode#conviete un un diccionario en un para metro d
 import jwt #crear y verificar token 
 import os # ver y interactuar con los valores que estan en la variable de entorno .env
 import httpx #para hacer peticiones a google. en pocas palabras un request
+import time #para expirar los codigos de intercambio
 from uuid import uuid4 # para generar id unicos aleatorios 
 from dotenv import load_dotenv #para cargar y leer las vriables de entorno 
 from fastapi import APIRouter, Depends, HTTPException, Cookie
@@ -166,6 +167,7 @@ def _generar_codigo_intercambio(google_code: str) -> str:
     _exchange_codes[exchange_code] = {
         "token": token,
         "username": user["USU_USERNAME"],
+        "exp": time.time() + 300,
     }
     return exchange_code
 
@@ -179,6 +181,8 @@ def intercambiar_codigo(data: ExchangeRequest):
     """Canjea un código de un solo uso por el JWT (evita leak en URL)."""
     entry = _exchange_codes.pop(data.code, None)
     if not entry:
+        raise HTTPException(status_code=400, detail="Código inválido o expirado")
+    if entry.get("exp") and time.time() > entry["exp"]:
         raise HTTPException(status_code=400, detail="Código inválido o expirado")
     return {
         "access_token": entry["token"],
