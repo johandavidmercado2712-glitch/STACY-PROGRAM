@@ -1,8 +1,8 @@
-from mysql.connector import Error, connect
-from config.db import DB_CONFIG
+from mysql.connector import Error, connect #para abrir una conexion con la base de datos y  capturar errores 
+from config.db import DB_CONFIG #la configuracion donde esta las credenciales de la base de datos 
 
 
-def crear_tablas_carpetas():
+def crear_tablas_carpetas(): 
     try:
         conexion = connect(**DB_CONFIG)
         cursor = conexion.cursor()
@@ -82,6 +82,27 @@ def obtener_carpetas(usu_id):
     except Error as e:
         print(f"Error al obtener carpetas: {e}")
         return []
+    finally:
+        try:
+            cursor.close()
+            conexion.close()
+        except Exception:
+            pass
+
+
+def verificar_propietario_carpeta(car_id: int, usu_id: int) -> bool:
+    try:
+        conexion = connect(**DB_CONFIG)
+        cursor = conexion.cursor()
+        cursor.execute(
+            "SELECT 1 FROM carpetas WHERE CAR_ID = %s AND USU_ID = %s",
+            (car_id, usu_id),
+        )
+        res = cursor.fetchone()
+        return res is not None
+    except Error as e:
+        print(f"Error al verificar propietario de carpeta: {e}")
+        return False
     finally:
         try:
             cursor.close()

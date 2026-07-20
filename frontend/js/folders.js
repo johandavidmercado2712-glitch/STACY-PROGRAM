@@ -1,5 +1,6 @@
 import { state } from './state.js';
 import { fetchFolders, createFolder, deleteFolderApi, assignCommandApi, unassignCommandApi, fetchAssignments } from './api.js';
+import { mostrarMensaje } from './auth.js';
 
 let _onSelectFolder = null;
 
@@ -97,7 +98,7 @@ export async function addFolder(name, description) {
     await loadFolders();
     renderFolders();
   } catch (e) {
-    // silently fail, could show error message
+    mostrarMensaje("Error al crear carpeta: " + e.message, "error");
   }
 }
 
@@ -135,7 +136,7 @@ export async function setCommandFolders(comId, newFolderIds) {
     await loadFolders();
     renderFolders();
   } catch (e) {
-    // silently fail
+    mostrarMensaje("Error al asignar carpetas: " + e.message, "error");
   }
 }
 

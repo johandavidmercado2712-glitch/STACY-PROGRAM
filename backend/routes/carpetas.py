@@ -14,6 +14,7 @@ from config.carpetasBD import (
     obtener_asignaciones,
     obtener_comandos_de_carpeta,
     actualizar_descripcion_comando,
+    verificar_propietario_carpeta,
 )
 
 router = APIRouter()
@@ -40,7 +41,7 @@ class DescripcionRequest(BaseModel):
     descripcion: str = ""
 
 
-def get_usu_id(my_user: dict) -> int:
+def get_usu_id(my_user: dict) -> int: #el jwt no  trae el id x eso se estrae el nombre , se busca en la base de datos y se trae el id
     user = obtener_usuario_por_username(my_user["sub"])
     if not user:
         raise HTTPException(status_code=404, detail="Usuario no encontrado")
@@ -50,7 +51,7 @@ def get_usu_id(my_user: dict) -> int:
 @router.post("/carpetas")
 def crear_carpeta(
     data: CrearCarpetaRequest,
-    my_user: Annotated[dict, Depends(get_current_user)],
+    my_user: Annotated[dict, Depends(get_current_user)],#obliga a queel usuario arroje en la terminal el token en el encabezado o arroja error 
 ):
     usu_id = get_usu_id(my_user)
     ok = guardar_carpeta(data.nombre, data.descripcion, usu_id)
@@ -82,9 +83,11 @@ def editar_carpeta(
 @router.delete("/carpetas/{car_id}")
 def borrar_carpeta(
     car_id: int,
-    my_user: Annotated[dict, Depends(get_current_user)],
+    my_user: Annotated[dict, Depends(get_current_user)], #define que va a ser un un dicionario y que primero tiene que ejecutarse el get_current_user
 ):
     usu_id = get_usu_id(my_user)
+    if not verificar_propietario_carpeta(car_id, usu_id):
+        raise HTTPException(status_code=403, detail="No autorizado para acceder a esta carpeta")
     ok = eliminar_carpeta(car_id, usu_id)
     if not ok:
         raise HTTPException(status_code=404, detail="Carpeta no encontrada")
@@ -96,6 +99,9 @@ def asignar(
     data: AsignarRequest,
     my_user: Annotated[dict, Depends(get_current_user)],
 ):
+    usu_id = get_usu_id(my_user)
+    if not verificar_propietario_carpeta(data.car_id, usu_id):
+        raise HTTPException(status_code=403, detail="No autorizado para acceder a esta carpeta")
     ok = asignar_comando(data.car_id, data.com_id)
     if not ok:
         raise HTTPException(status_code=500, detail="Error al asignar comando")
@@ -107,6 +113,9 @@ def desasignar(
     data: AsignarRequest,
     my_user: Annotated[dict, Depends(get_current_user)],
 ):
+    usu_id = get_usu_id(my_user)
+    if not verificar_propietario_carpeta(data.car_id, usu_id):
+        raise HTTPException(status_code=403, detail="No autorizado para acceder a esta carpeta")
     ok = desasignar_comando(data.car_id, data.com_id)
     if not ok:
         raise HTTPException(status_code=404, detail="Asignacion no encontrada")
@@ -118,6 +127,9 @@ def actualizar_descripcion(
     data: DescripcionRequest,
     my_user: Annotated[dict, Depends(get_current_user)],
 ):
+    usu_id = get_usu_id(my_user)
+    if not verificar_propietario_carpeta(data.car_id, usu_id):
+        raise HTTPException(status_code=403, detail="No autorizado para acceder a esta carpeta")
     ok = actualizar_descripcion_comando(data.car_id, data.com_id, data.descripcion)
     if not ok:
         raise HTTPException(status_code=404, detail="Asignacion no encontrada")
@@ -137,5 +149,11 @@ def listar_comandos_de_carpeta(
     my_user: Annotated[dict, Depends(get_current_user)],
 ):
     usu_id = get_usu_id(my_user)
+<<<<<<< HEAD
     comandos = obtener_comandos_de_carpeta(car_id, usu_id=usu_id)
+=======
+    if not verificar_propietario_carpeta(car_id, usu_id):
+        raise HTTPException(status_code=403, detail="No autorizado para acceder a esta carpeta")
+    comandos = obtener_comandos_de_carpeta(car_id)
+>>>>>>> 99aec01 (Implementacion De Seguridad)
     return {"comandos": comandos}

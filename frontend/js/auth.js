@@ -66,6 +66,16 @@ export function mostrarMensaje(texto, tipo) {
   authMessage.className = "auth-message" + (tipo ? " " + tipo : "");
 }
 
+async function intercambiarCodigo(code) {
+  const res = await fetch(API_BASE + "/auth/exchange", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ code }),
+  });
+  if (!res.ok) throw new Error("Error al iniciar sesión con Google");
+  return await res.json();
+}
+
 export function initAuth() {
   const loginForm = document.getElementById("login-form");
   const registerForm = document.getElementById("register-form");
@@ -126,11 +136,15 @@ export function initAuth() {
   });
 
   const urlParams = new URLSearchParams(window.location.search);
-  const urlToken = urlParams.get("token");
-  const urlUser = urlParams.get("user");
-  if (urlToken && urlUser) {
-    setToken(urlToken, urlUser);
-    window.history.replaceState({}, "", window.location.pathname);
+  const exchangeCode = urlParams.get("code");
+  if (exchangeCode) {
+    intercambiarCodigo(exchangeCode).then(data => {
+      setToken(data.access_token, data.username);
+      window.history.replaceState({}, "", window.location.pathname);
+    }).catch(err => {
+      mostrarMensaje(err.message, "error");
+      window.history.replaceState({}, "", window.location.pathname);
+    });
   }
 
   actualizarUI();

@@ -6,17 +6,22 @@ import os # ver y interactuar con los valores que estan en la variable de entorn
 import httpx #para hacer peticiones a google. en pocas palabras un request
 from uuid import uuid4 # para generar id unicos aleatorios 
 from dotenv import load_dotenv #para cargar y leer las vriables de entorno 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Cookie
 from fastapi.responses import RedirectResponse #para el flujo de google y redirigir a los usuarios a otra url 
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-from pydantic import BaseModel # para validar y estructurar los datos 
+from pydantic import BaseModel, Field # para validar y estructurar los datos 
 from config.usuarioDB import obtener_usuario_por_username, guardar_usuario, crear_tabla_usuarios
 from auth.hashing import hash_password, verify_password
 
 load_dotenv()
 
+ALGORITHM = "HS256"
 SECRET_KEY = os.getenv("SECRET_KEY")
-ALGORITHM = os.getenv("ALGORITHM")
+if not SECRET_KEY or SECRET_KEY == "STACY":
+    raise RuntimeError(
+        "SECRET_KEY no está configurada o es demasiado débil. "
+        "Genera una con: openssl rand -hex 32"
+    )
 GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
 GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
 GOOGLE_REDIRECT_URI = os.getenv("GOOGLE_REDIRECT_URI")
@@ -28,6 +33,9 @@ USERINFO_URL = "https://www.googleapis.com/oauth2/v2/userinfo" #donde obtienes e
 
 router = APIRouter()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/token")#define como extraer cada peticion
+
+# Almacén temporal para códigos de intercambio OAuth (en producción usar Redis)
+_exchange_codes: dict[str, dict] = {}
 
 
 def create_access_token(payload: dict) -> str: #hace una copia del token . le anade la fecha y la firma 
@@ -84,22 +92,50 @@ def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
 
 @router.get("/auth/google/login") #Contruye la URL de google con los parametros necesarios y redirige al para que inicie session alli
 def google_login():
+    state = str(uuid4())
     params = {
         "client_id": GOOGLE_CLIENT_ID, #el id con el cual google te reconoce
         "redirect_uri": GOOGLE_REDIRECT_URI, #donde google mandara al usuario despues del login
         "response_type": "code", #pide un codigo temporal de autorizacion 
         "scope": "openid email profile", #la informacion que le pides al usuario 
         "access_type": "online", #no necesitas acceso offline (sin refresh tokens)
+        "state": state,
     }
     url = f"{AUTHORIZATION_URL}?{urlencode(params)}"
-    return RedirectResponse(url)
+    response = RedirectResponse(url)
+    response.set_cookie(
+        key="oauth_state",
+        value=state,
+        httponly=True,
+        max_age=300, # 5 minutos
+        samesite="lax",
+    )
+    return response
 
 
 @router.get("/auth/google/callback")
-def google_callback(code: str):#Google llama a esta URL automáticamente con un code temporal en la query string
-    with httpx.Client() as client:# Canjea el code por tokens reales de Google (access_token, id_token, etc.).
+def google_callback(
+    code: str,
+    state: str | None = None,
+    oauth_state: Annotated[str | None, Cookie()] = None,
+):#Google llama a esta URL automáticamente con un code temporal en la query string
+    if not oauth_state or not state or oauth_state != state:
+        raise HTTPException(
+            status_code=400,
+            detail="Validación de estado (CSRF) fallida o expirada."
+        )
+    exchange_code = _generar_codigo_intercambio(code)
+    redirect_url = f"{FRONTEND_URL}?code={exchange_code}"
+    response = RedirectResponse(redirect_url)
+    response.delete_cookie("oauth_state")
+    return response
+
+
+def _generar_codigo_intercambio(google_code: str) -> str:
+    """Canjea el code de Google por un JWT y lo almacena tras un código de un solo uso."""
+    with httpx.Client() as client:
         resp = client.post(TOKEN_URL, data={
-            "code": code,
+            "code": google_code,
             "client_id": GOOGLE_CLIENT_ID,
             "client_secret": GOOGLE_CLIENT_SECRET,
             "redirect_uri": GOOGLE_REDIRECT_URI,
@@ -110,12 +146,12 @@ def google_callback(code: str):#Google llama a esta URL automáticamente con un 
     if "error" in tokens:
         raise HTTPException(status_code=400, detail=tokens.get("error_description", "Error al autenticar con Google"))
 
-    headers = {"Authorization": f"Bearer {tokens['access_token']}"} #sa el token de Google para obtener el email y nombre del usuario.
+    headers = {"Authorization": f"Bearer {tokens['access_token']}"}
     with httpx.Client() as client:
         resp = client.get(USERINFO_URL, headers=headers)
         user_info = resp.json()
 
-    google_email = user_info["email"] #Si el usuario de Google no existe en la BD, lo crea con una contraseña aleatoria (no la necesita porque usa Google para entrar).
+    google_email = user_info["email"]
     google_name = user_info.get("name", google_email.split("@")[0])
 
     user = obtener_usuario_por_username(google_email)
@@ -126,6 +162,27 @@ def google_callback(code: str):#Google llama a esta URL automáticamente con un 
         user = obtener_usuario_por_username(google_email)
 
     token = create_access_token({"sub": user["USU_USERNAME"]})
-    redirect_url = f"{FRONTEND_URL}?token={token}&user={user['USU_USERNAME']}"
-    return RedirectResponse(redirect_url)# Genera el token JWT propio de la app y redirige al frontend con el token en la URL para que lo guarde.
+    exchange_code = str(uuid4())
+    _exchange_codes[exchange_code] = {
+        "token": token,
+        "username": user["USU_USERNAME"],
+    }
+    return exchange_code
+
+
+class ExchangeRequest(BaseModel):
+    code: str
+
+
+@router.post("/auth/exchange")
+def intercambiar_codigo(data: ExchangeRequest):
+    """Canjea un código de un solo uso por el JWT (evita leak en URL)."""
+    entry = _exchange_codes.pop(data.code, None)
+    if not entry:
+        raise HTTPException(status_code=400, detail="Código inválido o expirado")
+    return {
+        "access_token": entry["token"],
+        "token_type": "bearer",
+        "username": entry["username"],
+    }
 
