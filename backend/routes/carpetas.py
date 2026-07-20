@@ -15,6 +15,7 @@ from config.carpetasBD import (
     obtener_comandos_de_carpeta,
     actualizar_descripcion_comando,
     verificar_propietario_carpeta,
+    comando_es_del_usuario,
 )
 
 router = APIRouter()
@@ -102,6 +103,11 @@ def asignar(
     usu_id = get_usu_id(my_user)
     if not verificar_propietario_carpeta(data.car_id, usu_id):
         raise HTTPException(status_code=403, detail="No autorizado para acceder a esta carpeta")
+    dueño = comando_es_del_usuario(data.com_id, usu_id)
+    if dueño is None:
+        raise HTTPException(status_code=404, detail="Comando no encontrado")
+    if not dueño:
+        raise HTTPException(status_code=403, detail="No autorizado para usar este comando")
     ok = asignar_comando(data.car_id, data.com_id)
     if not ok:
         raise HTTPException(status_code=500, detail="Error al asignar comando")
@@ -116,6 +122,11 @@ def desasignar(
     usu_id = get_usu_id(my_user)
     if not verificar_propietario_carpeta(data.car_id, usu_id):
         raise HTTPException(status_code=403, detail="No autorizado para acceder a esta carpeta")
+    dueño = comando_es_del_usuario(data.com_id, usu_id)
+    if dueño is None:
+        raise HTTPException(status_code=404, detail="Comando no encontrado")
+    if not dueño:
+        raise HTTPException(status_code=403, detail="No autorizado para usar este comando")
     ok = desasignar_comando(data.car_id, data.com_id)
     if not ok:
         raise HTTPException(status_code=404, detail="Asignacion no encontrada")
@@ -130,6 +141,11 @@ def actualizar_descripcion(
     usu_id = get_usu_id(my_user)
     if not verificar_propietario_carpeta(data.car_id, usu_id):
         raise HTTPException(status_code=403, detail="No autorizado para acceder a esta carpeta")
+    dueño = comando_es_del_usuario(data.com_id, usu_id)
+    if dueño is None:
+        raise HTTPException(status_code=404, detail="Comando no encontrado")
+    if not dueño:
+        raise HTTPException(status_code=403, detail="No autorizado para usar este comando")
     ok = actualizar_descripcion_comando(data.car_id, data.com_id, data.descripcion)
     if not ok:
         raise HTTPException(status_code=404, detail="Asignacion no encontrada")

@@ -3,6 +3,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from typing_extensions import Annotated
+import time
+from collections import defaultdict, deque
 from mysql.connector import Error, connect
 
 from auth.auth import get_current_user
@@ -35,9 +37,7 @@ origins = [
     "http://localhost:5500",
     "http://127.0.0.1:5500",
     "http://127.0.0.1:5501",
-    "http://stacyprogram.online",
     "https://stacyprogram.online",
-    "http://stacyprogram.online:8000",
 ]
 
 app.add_middleware(
@@ -47,6 +47,30 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Rate limiting básico en memoria (por IP) para los endpoints de autenticación.
+_RATE_LIMIT_PATHS = {"/token", "/register", "/auth/google/login", "/auth/google/exchange"}
+_RATE_LIMIT = defaultdict(deque)
+_RATE_LIMIT_MAX = 20        # máximo de peticiones
+_RATE_LIMIT_WINDOW = 60     # ventana en segundos
+
+
+@app.middleware("http")
+async def rate_limit_middleware(request, call_next):
+    client_ip = request.client.host if request.client else "unknown"
+    path = request.url.path
+    if path in _RATE_LIMIT_PATHS:
+        now = time.time()
+        dq = _RATE_LIMIT[(client_ip, path)]
+        while dq and dq[0] <= now - _RATE_LIMIT_WINDOW:
+            dq.popleft()
+        if len(dq) >= _RATE_LIMIT_MAX:
+            return JSONResponse(
+                status_code=429,
+                content={"estado": "error", "mensaje": "Demasiadas solicitudes. Intenta más tarde."},
+            )
+        dq.append(now)
+    return await call_next(request)
 
 
 @app.on_event("startup")
@@ -118,7 +142,7 @@ def obtener_ultimos_comandos(my_user: Annotated[dict, Depends(get_current_user)]
         return {"estado": "éxito", "total": len(resultado), "comandos": resultado}
     except Exception as e:
         return JSONResponse(
-            status_code=500, content={"estado": "error", "mensaje": str(e)}
+            status_code=500,         content={"estado": "error", "mensaje": "Error interno del servidor"}
         )
 
 
@@ -145,7 +169,7 @@ def obtener_todos_comandos(my_user: Annotated[dict, Depends(get_current_user)]):
         return {"estado": "éxito", "total": len(resultado), "comandos": resultado}
     except Exception as e:
         return JSONResponse(
-            status_code=500, content={"estado": "error", "mensaje": str(e)}
+            status_code=500,         content={"estado": "error", "mensaje": "Error interno del servidor"}
         )
 
 
@@ -172,7 +196,7 @@ def buscar_comando_nombre(
         return {"estado": "éxito", "total": len(comandos), "comandos": comandos}
     except Error as e:
         return JSONResponse(
-            status_code=500, content={"estado": "error", "mensaje": str(e)}
+            status_code=500,         content={"estado": "error", "mensaje": "Error interno del servidor"}
         )
 
 

@@ -178,6 +178,28 @@ def desasignar_comando(car_id, com_id):
             pass
 
 
+def comando_es_del_usuario(com_id, usu_id):
+    """True si el comando pertenece al usuario o es compartido (USU_ID IS NULL).
+    None si el comando no existe."""
+    try:
+        conexion = connect(**DB_CONFIG)
+        cursor = conexion.cursor(dictionary=True)
+        cursor.execute("SELECT USU_ID FROM comandos WHERE COM_ID = %s", (com_id,))
+        row = cursor.fetchone()
+        if not row:
+            return None
+        return row["USU_ID"] == usu_id or row["USU_ID"] is None
+    except Error as e:
+        print(f"Error al verificar propietario del comando: {e}")
+        return None
+    finally:
+        try:
+            cursor.close()
+            conexion.close()
+        except Exception:
+            pass
+
+
 def obtener_asignaciones(usu_id):
     try:
         conexion = connect(**DB_CONFIG)
