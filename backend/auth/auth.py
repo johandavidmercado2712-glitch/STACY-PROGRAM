@@ -92,11 +92,15 @@ def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
 
 
 @router.get("/auth/google/login") #Contruye la URL de google con los parametros necesarios y redirige al para que inicie session alli
-def google_login():
-    state = str(uuid4())
+def google_login(port: int | None = None, state: str | None = None):
+    # Si la extension pasa `state` lo usa (anti-CSRF); sino lo genera.
+    if not state:
+        state = str(uuid4())
+    # Si la extension pasa `port`, Google redirige el code al server local de la extension.
+    redirect_uri = f"http://127.0.0.1:{port}" if port else GOOGLE_REDIRECT_URI
     params = {
         "client_id": GOOGLE_CLIENT_ID, #el id con el cual google te reconoce
-        "redirect_uri": GOOGLE_REDIRECT_URI, #donde google mandara al usuario despues del login
+        "redirect_uri": redirect_uri, #donde google mandara al usuario despues del login
         "response_type": "code", #pide un codigo temporal de autorizacion 
         "scope": "openid email profile", #la informacion que le pides al usuario 
         "access_type": "online", #no necesitas acceso offline (sin refresh tokens)
