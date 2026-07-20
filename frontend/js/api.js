@@ -1,14 +1,9 @@
-<<<<<<< HEAD
 import { getCookie } from './cookie.js';
 
-export const API_BASE = "http://52.87.195.200:8000";
-=======
 const _host = window.location.hostname;
-const _protocol = window.location.protocol === "https:" ? "https:" : "http:";
 export const API_BASE = (_host === "localhost" || _host === "127.0.0.1")
   ? `http://${_host}:8000`
-  : `https://52.87.195.200:8080`;
->>>>>>> 99aec01 (Implementacion De Seguridad)
+  : "https://stacyprogram.online";
 
 export async function login(username, password) {
   const formData = new URLSearchParams();
@@ -36,9 +31,7 @@ export async function register(username, apellidos, correo, password) {
 }
 
 function authHeaders() {
-  let token = getCookie("access_token");
-  if (!token) token = localStorage.getItem("access_token_backup");
-  console.log("[DEBUG] authHeaders token found:", !!token, "cookie:", !!getCookie("access_token"));
+  const token = getCookie("access_token");
   if (!token) return {};
   return { "Authorization": "Bearer " + token };
 }

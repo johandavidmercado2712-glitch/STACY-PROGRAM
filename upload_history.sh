@@ -1,17 +1,18 @@
 #!/bin/bash
 # Upload local shell history to STACY
 # Usage: ./upload_history.sh <API_TOKEN> [API_URL]
-#   API_URL defaults to http://52.87.195.200:8000
+#   API_URL defaults to https://stacyprogram.online
+# El token tambien puede pasarse via variable de entorno STACY_TOKEN.
 
-TOKEN="$1"
-API_URL="${2:-http://52.87.195.200:8000}"
+TOKEN="${STACY_TOKEN:-$1}"
+API_URL="${2:-https://stacyprogram.online}"
 
 if [ -z "$TOKEN" ]; then
     echo "Usage: $0 <API_TOKEN> [API_URL]"
     echo ""
-    echo "1. Log in to STACY at http://52.87.195.200:5500"
+    echo "1. Log in to STACY at https://stacyprogram.online"
     echo "2. Click 'Copy Token' button"
-    echo "3. Run: bash $0 <PASTE_TOKEN_HERE>"
+    echo "3. Run: STACY_TOKEN=<PEGA_TOKEN> bash $0"
     exit 1
 fi
 
@@ -21,7 +22,7 @@ if [ -n "$ZSH_VERSION" ] || [ -f "$HOME/.zsh_history" ]; then
 elif [ -f "$HOME/.bash_history" ]; then
     HISTORY_FILE="$HOME/.bash_history"
 else
-    echo "No se encontró .bash_history ni .zsh_history"
+    echo "No se encontro .bash_history ni .zsh_history"
     exit 1
 fi
 
@@ -29,23 +30,23 @@ MAQUINA=$(hostname)
 echo "Maquina detectada: $MAQUINA"
 echo "Leyendo historial desde: $HISTORY_FILE"
 
-# Read history, deduplicate, skip empty lines
-COMMANDS=$(python3 -c "
-import json, os
-
-path = os.path.expanduser('$HISTORY_FILE')
-maquina = '$MAQUINA'
+# Los valores se pasan por ENTORNO y se leen con os.environ dentro de Python:
+# ningun dato del usuario se interpola en el codigo fuente => no hay inyeccion de comandos.
+COMMANDS=$(
+  STACY_HISTORY_FILE="$HISTORY_FILE" STACY_MAQUINA="$MAQUINA" python3 - <<'PY'
+import json, os, sys
+path = os.path.expanduser(os.environ['STACY_HISTORY_FILE'])
+maquina = os.environ['STACY_MAQUINA']
 if not os.path.exists(path):
-    exit(1)
+    sys.exit(1)
 
 comandos = []
+seen = set()
 with open(path, errors='ignore') as f:
-    seen = set()
     for line in f:
         line = line.strip()
         if not line:
             continue
-        # Clean zsh prefix: ': <timestamp>:<duration>;'
         if line.startswith(': '):
             sep = line.find(';')
             if sep != -1 and sep + 1 < len(line):
@@ -57,14 +58,15 @@ with open(path, errors='ignore') as f:
         comandos.append({'comando': line, 'ruta': ruta})
 
 print(json.dumps({'comandos': comandos}))
-")
+PY
+)
 
 if [ -z "$COMMANDS" ]; then
     echo "Error al leer el historial"
     exit 1
 fi
 
-COUNT=$(echo "$COMMANDS" | python3 -c "import json,sys; print(len(json.load(sys.stdin)['comandos']))")
+COUNT=$(printf '%s' "$COMMANDS" | python3 -c "import json,sys; print(len(json.load(sys.stdin)['comandos']))")
 echo "Enviando $COUNT comandos a $API_URL/comandos/importar ..."
 
 RESPONSE=$(curl -s -X POST "$API_URL/comandos/importar" \

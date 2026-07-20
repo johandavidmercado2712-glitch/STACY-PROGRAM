@@ -339,7 +339,7 @@ function renderMachineFilter() {
   container.style.display = "";
   const active = state.selectedMaquina || "all";
   const label = active === "all" ? "Todas" : active;
-  container.innerHTML = '<button class="btn-machine-select" id="machine-filter-btn">' + label + ' <svg width="10" height="6" viewBox="0 0 10 6" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 1l4 4 4-4"/></svg></button>';
+  container.innerHTML = '<button class="btn-machine-select" id="machine-filter-btn">' + escapeHtml(label) + ' <svg width="10" height="6" viewBox="0 0 10 6" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 1l4 4 4-4"/></svg></button>';
   document.getElementById("machine-filter-btn").addEventListener("click", mostrarModalSeleccionMaquinas);
 }
 
@@ -612,7 +612,7 @@ function mostrarModalMaquinas() {
 }
 
 function descargarScript(token, os) {
-  const API_URL = "http://52.87.195.200:8000";
+  const API_URL = "https://stacyprogram.online";
   let contenido, nombreArchivo, tipoMime;
 
   if (os === "windows") {

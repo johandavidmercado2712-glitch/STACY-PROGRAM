@@ -22,24 +22,18 @@ export function getTokenUser() {
 export function setToken(token, username) {
   setCookie(TOKEN_KEY, token);
   setCookie(USER_KEY, username);
-  localStorage.setItem("access_token_backup", token);
-  localStorage.setItem("token_user_backup", username);
   actualizarUI();
 }
 
 export function clearToken() {
   deleteCookie(TOKEN_KEY);
   deleteCookie(USER_KEY);
-  localStorage.removeItem("access_token_backup");
-  localStorage.removeItem("token_user_backup");
   actualizarUI();
 }
 
 export function actualizarUI() {
   let token = getToken();
   let user = getTokenUser();
-  if (!token) token = localStorage.getItem("access_token_backup");
-  if (!user) user = localStorage.getItem("token_user_backup");
   const navbar = document.getElementById("navbar");
   const authWrapper = document.getElementById("auth-wrapper");
   const dashboard = document.getElementById("dashboard");
