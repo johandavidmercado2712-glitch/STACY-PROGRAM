@@ -1,0 +1,17 @@
+# Excluir archivos innecesarios del despliegue en Vercel
+node_modules/
+__pycache__/
+*.pyc
+.env
+.env.example
+*.log
+test/
+venv/
+.git/
+*.swp
+*.swo
+1.py
+backend/1.py
+frontend/styles.css
+README.md
+vercel.json

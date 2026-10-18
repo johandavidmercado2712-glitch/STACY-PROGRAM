@@ -1,5 +1,8 @@
-from app.controllers.historial_controller import HistorialControlador
+"""
+Punto de entrada LOCAL de la API de STACY:
 
-if __name__ == "__main__":
-    app = HistorialControlador()
-    app.ejecutar()
+    cd backend
+    uvicorn routes.web:app --reload --port 8000
+
+En VERCEL no se usa este archivo: se usa api/index.py (ver wiki del repo).
+"""
