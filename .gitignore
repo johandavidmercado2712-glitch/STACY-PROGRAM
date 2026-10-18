@@ -1,0 +1,16 @@
+# Secretos: nunca subir credenciales al repositorio
+.env
+*.env
+!.env.example
+
+# Caché de Python
+__pycache__/
+*.py[cod]
+
+# Entorno virtual
+venv/
+.venv/
+
+# Sistema operativo y editor
+.DS_Store
+Thumbs.db
