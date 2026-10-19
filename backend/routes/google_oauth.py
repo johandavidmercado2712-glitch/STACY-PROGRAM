@@ -37,13 +37,24 @@ GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID", "")
 GOOGLE_CLIENT_SECRET = os.environ.get("GOOGLE_CLIENT_SECRET", "")
 
 
+# Dominio canónico de OAuth. Google Console solo tiene autorizado este host,
+# por eso lo fijamos en vez de derivarlo del `Host` de la petición: si el
+# usuario entra por www, Google rechazaría el callback con redirect_uri_mismatch.
+GOOGLE_REDIRECT_URI = os.environ.get(
+    "GOOGLE_REDIRECT_URI", "https://stacyprogram.online/auth/google/callback"
+)
+
+
 def _scheme(host: str) -> str:
     # Local: http; detrás de Vercel u otro proxy HTTPS: https.
     return "http" if ("localhost" in host or "127.0.0.1" in host) else "https"
 
 
 def _redirect_uri(host: str) -> str:
-    return f"{_scheme(host)}://{host}/auth/google/callback"
+    """Callback de OAuth: siempre el canónico (o el local en desarrollo)."""
+    if "localhost" in host or "127.0.0.1" in host:
+        return f"http://{host}/auth/google/callback"
+    return GOOGLE_REDIRECT_URI
 
 
 def _separar_state(state: str):
