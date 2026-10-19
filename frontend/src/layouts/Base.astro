@@ -2,6 +2,7 @@
 import '@fontsource-variable/geist';
 import '@fontsource-variable/geist-mono';
 import '../styles/global.css';
+import PageSkeleton from '../components/PageSkeleton.astro';
 
 interface Props {
   title: string;
@@ -27,7 +28,7 @@ const jsonLd = {
 ---
 
 <!doctype html>
-<html lang="es">
+<html lang="es" data-theme="dark">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -53,12 +54,56 @@ const jsonLd = {
     <meta name="twitter:image" content={ogImage} />
 
     <meta name="theme-color" content="#14110e" />
-    <meta name="color-scheme" content="dark" />
+    <meta name="color-scheme" content="dark light" />
+
+    <script is:inline>
+      // Marca JS disponible para que el esqueleto solo se pinte con JS.
+      document.documentElement.classList.add('has-js');
+    </script>
+
+    <script is:inline>
+      // Aplica el tema guardado antes de pintar para evitar el parpadeo.
+      (() => {
+        const stored = localStorage.getItem('stacy-theme');
+        const theme =
+          stored === 'light' || stored === 'dark'
+            ? stored
+            : window.matchMedia('(prefers-color-scheme: light)').matches
+              ? 'light'
+              : 'dark';
+        document.documentElement.dataset.theme = theme;
+        const meta = document.querySelector('meta[name="theme-color"]');
+        if (meta) meta.content = theme === 'light' ? '#faf7f2' : '#14110e';
+      })();
+    </script>
 
     <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
   </head>
   <body>
     <a class="skip-link" href="#contenido">Saltar al contenido</a>
+    <PageSkeleton />
     <slot />
+    <script>
+      // Transicion de entrada: el esqueleto se retira cuando el documento
+      // esta listo. Si no hay JS, el esqueleto nunca se pinta (oculto por CSS
+      // hasta que el script lo activa) y el contenido se ve directamente.
+      const boot = document.querySelector<HTMLElement>('[data-boot-skeleton]');
+      const root = document.documentElement;
+
+      const reveal = () => {
+        root.classList.add('is-booted');
+        boot?.setAttribute('hidden', '');
+      };
+
+      if (document.readyState === 'complete') {
+        reveal();
+      } else {
+        window.addEventListener('load', reveal, { once: true });
+        // Fuentes web: cuando están listas, el texto real no cambia de ancho.
+        document.fonts?.ready.then(reveal).catch(() => {});
+        // Red de seguridad: si la carga se eterniza, el contenido se muestra.
+        setTimeout(reveal, 2500);
+      }
+    </script>
   </body>
 </html>

@@ -1,6 +1,7 @@
 ---
 import Base from '../layouts/Base.astro';
 import Icon from '../components/Icon.astro';
+import ThemeToggle from '../components/ThemeToggle.astro';
 
 const MARKETPLACE = 'https://marketplace.visualstudio.com/items?itemName=STACY.stacy-extension';
 
@@ -118,6 +119,7 @@ const especificacion = [
         <a class="nav__link" href="#funcionalidades">Funciones</a>
         <a class="nav__link" href="#diferenciadores">Diferencias</a>
         <a class="nav__link" href="https://www.stacyprogram.online/docs" rel="noopener">API</a>
+        <ThemeToggle />
         <a class="btn" href={MARKETPLACE} rel="noopener" target="_blank">
           Instalar
           <Icon name="arrow-square-out" weight="bold" />

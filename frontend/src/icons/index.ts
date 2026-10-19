@@ -11,6 +11,8 @@ const raw = {
   'regular/folder-open': () => import('./regular/folder-open.svg?raw'),
   'regular/laptop': () => import('./regular/laptop.svg?raw'),
   'regular/monitor': () => import('./regular/monitor.svg?raw'),
+  'regular/moon': () => import('./regular/moon.svg?raw'),
+  'regular/sun': () => import('./regular/sun.svg?raw'),
   'regular/note-pencil': () => import('./regular/note-pencil.svg?raw'),
   'regular/terminal-window': () => import('./regular/terminal-window.svg?raw'),
   'regular/x-circle': () => import('./regular/x-circle.svg?raw'),
@@ -23,6 +25,8 @@ const raw = {
   'bold/folder-open': () => import('./bold/folder-open.svg?raw'),
   'bold/laptop': () => import('./bold/laptop.svg?raw'),
   'bold/monitor': () => import('./bold/monitor.svg?raw'),
+  'bold/moon': () => import('./bold/moon.svg?raw'),
+  'bold/sun': () => import('./bold/sun.svg?raw'),
   'bold/note-pencil': () => import('./bold/note-pencil.svg?raw'),
   'bold/terminal-window': () => import('./bold/terminal-window.svg?raw'),
   'bold/x-circle': () => import('./bold/x-circle.svg?raw'),
@@ -35,6 +39,8 @@ const raw = {
   'fill/folder-open': () => import('./fill/folder-open.svg?raw'),
   'fill/laptop': () => import('./fill/laptop.svg?raw'),
   'fill/monitor': () => import('./fill/monitor.svg?raw'),
+  'fill/moon': () => import('./fill/moon.svg?raw'),
+  'fill/sun': () => import('./fill/sun.svg?raw'),
   'fill/note-pencil': () => import('./fill/note-pencil.svg?raw'),
   'fill/terminal-window': () => import('./fill/terminal-window.svg?raw'),
   'fill/x-circle': () => import('./fill/x-circle.svg?raw'),
@@ -50,7 +56,9 @@ export type IconName =
   | 'folder-open'
   | 'laptop'
   | 'monitor'
+  | 'moon'
   | 'note-pencil'
+  | 'sun'
   | 'terminal-window'
   | 'x-circle'
 ;

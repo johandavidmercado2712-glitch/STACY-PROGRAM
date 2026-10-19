@@ -1,0 +1,55 @@
+---
+// Interruptor de tema claro / oscuro. Persiste la eleccion en localStorage
+// y refleja la preferencia del sistema como valor inicial.
+import Icon from './Icon.astro';
+---
+
+<button class="theme-toggle" type="button" data-theme-toggle aria-label="Cambiar a modo claro">
+  <span class="theme-toggle__icon theme-toggle__icon--sun">
+    <Icon name="sun" weight="bold" />
+  </span>
+  <span class="theme-toggle__icon theme-toggle__icon--moon">
+    <Icon name="moon" weight="bold" />
+  </span>
+</button>
+
+<script>
+  const STORAGE_KEY = 'stacy-theme';
+
+  function currentTheme(): 'light' | 'dark' {
+    return document.documentElement.dataset.theme === 'light' ? 'light' : 'dark';
+  }
+
+  function applyTheme(theme: 'light' | 'dark') {
+    document.documentElement.dataset.theme = theme;
+    localStorage.setItem(STORAGE_KEY, theme);
+
+    for (const meta of document.querySelectorAll<HTMLMetaElement>('meta[name="theme-color"]')) {
+      meta.content = theme === 'light' ? '#faf7f2' : '#14110e';
+    }
+
+    for (const btn of document.querySelectorAll<HTMLButtonElement>('[data-theme-toggle]')) {
+      btn.setAttribute(
+        'aria-label',
+        theme === 'light' ? 'Cambiar a modo oscuro' : 'Cambiar a modo claro',
+      );
+      btn.setAttribute('aria-pressed', String(theme === 'light'));
+    }
+  }
+
+  for (const btn of document.querySelectorAll<HTMLButtonElement>('[data-theme-toggle]')) {
+    btn.addEventListener('click', () => {
+      applyTheme(currentTheme() === 'light' ? 'dark' : 'light');
+    });
+  }
+
+  // Sincroniza con el sistema mientras el visitante no elija manualmente.
+  const media = window.matchMedia('(prefers-color-scheme: light)');
+  media.addEventListener('change', (e) => {
+    if (!localStorage.getItem(STORAGE_KEY)) {
+      applyTheme(e.matches ? 'light' : 'dark');
+    }
+  });
+
+  applyTheme(currentTheme());
+</script>

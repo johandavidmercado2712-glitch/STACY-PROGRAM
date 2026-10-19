@@ -38,6 +38,48 @@
   --dur: 180ms;
 
   --radius: 12px;
+
+  /* Tokens derivados para superficies de color y bordes con contraste. */
+  --amber-ink: #241704;
+  --line-strong: #3a322c;
+  --scrollbar-edge: #14110e;
+  --shadow-soft: rgba(0, 0, 0, 0.9);
+  --inset-hi: rgba(255, 255, 255, 0.03);
+
+  /* Superficie de terminal: siempre oscura, es un terminal real. */
+  --term-bg: #0f0d0b;
+  --term-fg: #f4efe9;
+  --term-dim: #8a8078;
+  --term-ok: #ff9602;
+  --term-line: #2b2521;
+  --term-line-soft: #221d1a;
+  --term-shadow: rgba(0, 0, 0, 0.9);
+  --term-inset: rgba(255, 255, 255, 0.03);
+}
+
+/* ---------- Tema claro ---------- */
+/* Identidad ambar sobre superficie calida clara (no blanco puro). */
+[data-theme='light'] {
+  --amber: #a05a00;
+  --amber-bright: #8a4d00;
+  --amber-dim: rgba(160, 90, 0, 0.12);
+  --amber-line: rgba(160, 90, 0, 0.34);
+
+  --bg: #faf7f2;
+  --bg-raise: #ffffff;
+  --bg-sunken: #f1ece4;
+  --line: #dcd4c8;
+  --line-soft: #e8e1d6;
+
+  --fg: #1c1815;
+  --fg-muted: #5a5049;
+  --fg-faint: #6f655d;
+
+  --amber-ink: #ffffff;
+  --line-strong: #c9bfae;
+  --scrollbar-edge: #faf7f2;
+  --shadow-soft: rgba(60, 45, 25, 0.28);
+  --inset-hi: rgba(255, 255, 255, 0.7);
 }
 
 *,
@@ -70,14 +112,14 @@ body::before {
   inset: 0;
   z-index: -1;
   background:
-    radial-gradient(60rem 40rem at 78% -10%, rgba(255, 150, 2, 0.07), transparent 60%),
-    radial-gradient(45rem 30rem at 5% 8%, rgba(255, 150, 2, 0.04), transparent 65%);
+    radial-gradient(60rem 40rem at 78% -10%, var(--amber-dim), transparent 60%),
+    radial-gradient(45rem 30rem at 5% 8%, var(--amber-dim), transparent 65%);
   pointer-events: none;
 }
 
 ::selection {
   background: var(--amber);
-  color: var(--bg-sunken);
+  color: var(--amber-ink);
 }
 
 /* El navegador tambien es parte del diseno. */
@@ -94,11 +136,11 @@ body::before {
 *::-webkit-scrollbar-thumb {
   background: var(--line);
   border-radius: 99px;
-  border: 3px solid var(--bg);
+  border: 3px solid var(--scrollbar-edge);
 }
 
 *::-webkit-scrollbar-thumb:hover {
-  background: #3a322c;
+  background: var(--line-strong);
 }
 
 :focus-visible {
@@ -172,7 +214,7 @@ pre {
   z-index: 100;
   padding: 0.65rem 1.1rem;
   background: var(--amber);
-  color: var(--bg-sunken);
+  color: var(--amber-ink);
   font-weight: 600;
   border-radius: 0 0 var(--radius) var(--radius);
   transition: translate 160ms var(--ease);
@@ -198,7 +240,7 @@ pre {
 
 .btn {
   --btn-bg: var(--amber);
-  --btn-fg: #241704;
+  --btn-fg: var(--amber-ink);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -236,7 +278,7 @@ pre {
 
 .btn--ghost:hover {
   background: var(--bg-raise);
-  border-color: #3a322c;
+  border-color: var(--line-strong);
 }
 
 .btn--lg {
@@ -248,6 +290,71 @@ pre {
   flex: none;
   width: 1.05em;
   height: 1.05em;
+}
+
+/* ---------- Interruptor de tema ---------- */
+
+.theme-toggle {
+  display: inline-grid;
+  grid-template-columns: 1fr 1fr;
+  place-items: center;
+  width: 3.4rem;
+  height: 2rem;
+  padding: 0.2rem;
+  border: 1px solid var(--line);
+  border-radius: 99px;
+  background: var(--bg-raise);
+  color: var(--fg-muted);
+  cursor: pointer;
+  transition:
+    border-color 140ms var(--ease),
+    color 140ms var(--ease),
+    transform 140ms var(--ease);
+}
+
+.theme-toggle:hover {
+  border-color: var(--line-strong);
+  color: var(--fg);
+}
+
+.theme-toggle:active {
+  transform: scale(0.94);
+}
+
+.theme-toggle__icon {
+  display: grid;
+  place-items: center;
+  width: 1.4rem;
+  height: 1.4rem;
+  border-radius: 50%;
+  transition:
+    background-color 180ms var(--ease),
+    color 180ms var(--ease);
+}
+
+.theme-toggle__icon svg {
+  width: 0.95rem;
+  height: 0.95rem;
+}
+
+/* En modo oscuro se ilumina el sol (invita a pasar a claro). */
+[data-theme='dark'] .theme-toggle__icon--sun {
+  background: var(--amber);
+  color: var(--amber-ink);
+}
+
+[data-theme='dark'] .theme-toggle__icon--moon {
+  color: var(--fg-faint);
+}
+
+/* En modo claro se ilumina la luna. */
+[data-theme='light'] .theme-toggle__icon--moon {
+  background: var(--amber);
+  color: var(--amber-ink);
+}
+
+[data-theme='light'] .theme-toggle__icon--sun {
+  color: var(--fg-faint);
 }
 
 /* ---------- Header ---------- */
@@ -387,12 +494,12 @@ pre {
 /* Terminal decorativa */
 .term {
   overflow: hidden;
-  border: 1px solid var(--line);
+  border: 1px solid var(--term-line);
   border-radius: var(--radius);
-  background: var(--bg-sunken);
+  background: var(--term-bg);
   box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.03) inset,
-    0 24px 60px -30px rgba(0, 0, 0, 0.9);
+    0 1px 0 var(--term-inset) inset,
+    0 24px 60px -30px var(--term-shadow);
 }
 
 .term__bar {
@@ -400,8 +507,8 @@ pre {
   align-items: center;
   gap: 0.45rem;
   padding: 0.7rem 0.9rem;
-  border-bottom: 1px solid var(--line-soft);
-  color: var(--fg-faint);
+  border-bottom: 1px solid var(--term-line-soft);
+  color: var(--term-dim);
   font-family: var(--font-mono);
   font-size: 0.75rem;
 }
@@ -410,11 +517,11 @@ pre {
   width: 0.6rem;
   height: 0.6rem;
   border-radius: 50%;
-  background: var(--line);
+  background: var(--term-line);
 }
 
 .term__bar i:first-child {
-  background: var(--amber);
+  background: var(--term-ok);
 }
 
 .term__body {
@@ -424,18 +531,24 @@ pre {
   font-size: 0.85rem;
   line-height: 1.85;
   overflow-x: auto;
+  scrollbar-color: var(--term-line) var(--term-bg);
+}
+
+.term__body::-webkit-scrollbar-thumb {
+  background: var(--term-line);
+  border-color: var(--term-bg);
 }
 
 .term__body .p {
-  color: var(--fg);
+  color: var(--term-fg);
 }
 
 .term__body .ok {
-  color: var(--amber);
+  color: var(--term-ok);
 }
 
 .term__body .dim {
-  color: var(--fg-faint);
+  color: var(--term-dim);
 }
 
 /* ---------- Cabecera de seccion ---------- */
@@ -663,7 +776,7 @@ pre {
 
 .diff__col--stacy {
   border-color: var(--amber-line);
-  background: linear-gradient(180deg, rgba(255, 150, 2, 0.07), transparent 60%), var(--bg-raise);
+  background: linear-gradient(180deg, var(--amber-dim), transparent 60%), var(--bg-raise);
 }
 
 .diff__col h3 {
@@ -706,7 +819,7 @@ pre {
 }
 
 .diff__col--other li svg {
-  color: #6b625b;
+  color: var(--fg-faint);
 }
 
 .spec {
@@ -753,7 +866,7 @@ pre {
   border: 1px solid var(--amber-line);
   border-radius: 16px;
   background:
-    radial-gradient(40rem 20rem at 85% 0%, rgba(255, 150, 2, 0.1), transparent 60%),
+    radial-gradient(40rem 20rem at 85% 0%, var(--amber-dim), transparent 60%),
     var(--bg-raise);
 }
 
@@ -787,22 +900,22 @@ pre {
 .install {
   margin-top: 1.75rem;
   padding: 0.9rem 1.1rem;
-  border: 1px solid var(--line);
+  border: 1px solid var(--term-line);
   border-radius: 10px;
-  background: var(--bg-sunken);
+  background: var(--term-bg);
   font-family: var(--font-mono);
   font-size: 0.88rem;
-  color: var(--fg-muted);
+  color: var(--term-dim);
   overflow-x: auto;
   white-space: nowrap;
 }
 
 .install .c {
-  color: var(--fg-faint);
+  color: var(--term-dim);
 }
 
 .install .ok {
-  color: var(--amber);
+  color: var(--term-ok);
 }
 
 /* ---------- Footer ---------- */
@@ -874,5 +987,210 @@ pre {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+}
+
+/* ---------- Esqueleto de carga ---------- */
+/* Solo se pinta si hay JS: sin JS el contenido real se ve de inmediato. */
+
+.boot {
+  display: none;
+}
+
+.has-js .boot {
+  display: block;
+}
+
+/* El atributo hidden debe ganar a display:block. */
+.boot[hidden] {
+  display: none !important;
+}
+
+/* El contenido real permanece oculto hasta que el esqueleto se retira. */
+.has-js body > main,
+.has-js body > .site-header,
+.has-js body > .site-footer {
+  opacity: 0;
+}
+
+.is-booted body > main,
+.is-booted body > .site-header,
+.is-booted body > .site-footer {
+  opacity: 1;
+  transition: opacity 260ms var(--ease);
+}
+
+.boot {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  overflow: hidden;
+  background: var(--bg);
+}
+
+.boot__header {
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.boot__header-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  min-height: 3.75rem;
+}
+
+.boot__brand,
+.boot__link,
+.boot__title,
+.boot__line,
+.boot__btn,
+.boot__bar,
+.boot__row {
+  display: block;
+  border-radius: 8px;
+  background: var(--bg-raise);
+  box-shadow: 0 1px 0 var(--inset-hi) inset;
+}
+
+.boot__brand {
+  width: 8.5rem;
+  height: 1.35rem;
+}
+
+.boot__nav {
+  display: flex;
+  align-items: center;
+  gap: clamp(0.75rem, 1.6vw, 1.75rem);
+}
+
+.boot__link {
+  width: 4.5rem;
+  height: 0.9rem;
+}
+
+.boot__hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+  gap: clamp(2rem, 1rem + 4vw, 4.5rem);
+  align-items: center;
+  padding-block: clamp(3.5rem, 2rem + 8vw, 7rem) clamp(3rem, 2rem + 4vw, 5rem);
+}
+
+.boot__hero-copy {
+  display: grid;
+  gap: 1rem;
+}
+
+.boot__title {
+  width: 100%;
+  height: clamp(2.2rem, 1.4rem + 3.4vw, 3.6rem);
+  border-radius: 10px;
+}
+
+.boot__title--short {
+  width: 62%;
+}
+
+.boot__line {
+  width: 100%;
+  height: 1rem;
+  margin-top: 0.35rem;
+}
+
+.boot__line--short {
+  width: 78%;
+  margin-top: 0;
+}
+
+.boot__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+}
+
+.boot__btn {
+  width: 11.5rem;
+  height: 3rem;
+  border-radius: 10px;
+}
+
+.boot__btn--ghost {
+  width: 9.5rem;
+  background: transparent;
+  box-shadow: 0 0 0 1px var(--line) inset;
+}
+
+.boot__panel {
+  display: grid;
+  gap: 0.85rem;
+  padding: 1.15rem 1.25rem 1.35rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--bg-sunken);
+}
+
+.boot__bar {
+  width: 8rem;
+  height: 0.7rem;
+  margin-bottom: 0.4rem;
+}
+
+.boot__row {
+  width: 100%;
+  height: 0.85rem;
+}
+
+.boot__row--short {
+  width: 66%;
+}
+
+/* Latido: un unico momento de movimiento, suave y sin destellos. */
+.boot__brand,
+.boot__link,
+.boot__title,
+.boot__line,
+.boot__btn,
+.boot__bar,
+.boot__row {
+  animation: boot-pulse 1.6s var(--ease) infinite;
+}
+
+@keyframes boot-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.45;
+  }
+}
+
+@media (max-width: 900px) {
+  .boot__hero {
+    grid-template-columns: 1fr;
+  }
+
+  .boot__panel {
+    display: none;
+  }
+}
+
+@media (max-width: 720px) {
+  .boot__nav {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .boot__brand,
+  .boot__link,
+  .boot__title,
+  .boot__line,
+  .boot__btn,
+  .boot__bar,
+  .boot__row {
+    animation: none;
   }
 }
