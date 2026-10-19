@@ -17,3 +17,4 @@ if str(BACKEND) not in sys.path:
     sys.path.insert(0, str(BACKEND))
 
 from routes.web import app  # noqa: E402  (app FastAPI de backend/routes/web.py)
+app = app
