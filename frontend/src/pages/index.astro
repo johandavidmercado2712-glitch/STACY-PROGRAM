@@ -1,0 +1,335 @@
+---
+import Base from '../layouts/Base.astro';
+import Icon from '../components/Icon.astro';
+
+const MARKETPLACE = 'https://marketplace.visualstudio.com/items?itemName=STACY.stacy-extension';
+
+const title = 'STACY · Tu historial de terminal, siempre a mano';
+const description =
+  'STACY guarda, organiza y recupera los comandos de tu terminal desde VS Code. Disponible para Windows, Linux y macOS, con carpetas, notas y búsqueda instantánea del historial.';
+
+const problemas = [
+  {
+    titulo: 'El historial se pierde',
+    texto:
+      'El buffer de la terminal se sobrescribe y los comandos utiles desaparecen. Buscarlos en el scrollback es lento y poco fiable.',
+  },
+  {
+    titulo: 'Cada proyecto con sus comandos',
+    texto:
+      'Copiar y pegar un comando entre proyectos termina en un archivo suelto, una nota personal o un mensaje a un colega.',
+  },
+  {
+    titulo: 'Sin contexto ni equipo',
+    texto:
+      'Un comando que funcionó ayer no recuerda dónde ni cómo se ejecutó, y nadie más en el equipo puede reutilizarlo.',
+  },
+];
+
+const pasos = [
+  {
+    titulo: 'Instala STACY en VS Code',
+    texto:
+      'La extensión aparece en la barra lateral con su propio panel. Funciona en Windows, Linux y macOS con la misma experiencia.',
+  },
+  {
+    titulo: 'Inicia sesión con Google',
+    texto:
+      'Tu historial queda asociado a tu cuenta. La sesión viaja con cookie segura y la API nunca expone credenciales.',
+  },
+  {
+    titulo: 'Importa y organiza',
+    texto:
+      'Sube el comando actual, crea carpetas por proyecto y deja una nota al lado de cada grupo de comandos.',
+  },
+  {
+    titulo: 'Busca y reutiliza',
+    texto:
+      'Busca por palabra clave o por directorio, copia al portapapeles y sigue trabajando sin salir de VS Code.',
+  },
+];
+
+const funcionalidades = [
+  {
+    icono: 'clock-counter-clockwise',
+    titulo: 'Historial sincronizado',
+    texto: 'Tus comandos quedan guardados en tu cuenta y disponibles desde cualquier equipo.',
+    puntos: ['Últimos comandos en un panel lateral', 'Búsqueda por nombre o palabra clave', 'Historial completo, no solo el buffer reciente'],
+  },
+  {
+    icono: 'folder-open',
+    titulo: 'Carpetas por proyecto',
+    texto: 'Agrupa los comandos de cada proyecto y describe de que trata cada carpeta.',
+    puntos: ['Crear, renombrar y eliminar carpetas', 'Asignar y desasignar comandos', 'Descripcion por carpeta para contexto'],
+  },
+  {
+    icono: 'note-pencil',
+    titulo: 'Notas al lado del historial',
+    texto: 'Anota el porque de cada comando para que tu equipo no tenga que adivinar.',
+    puntos: ['Notas con título y contenido', 'Edición y borrado desde la extensión', 'Historial enlazado al contexto del proyecto'],
+  },
+  {
+    icono: 'terminal-window',
+    titulo: 'Importación directa',
+    texto: 'Guarda el comando que estas ejecutando sin salir de la terminal.',
+    puntos: ['Importar el comando actual', 'Directorio de trabajo asociado', 'Copia rapida al portapapeles'],
+  },
+];
+
+const diferenciadores = [
+  {
+    titulo: 'Con STACY',
+    tipo: 'stacy',
+    puntos: [
+      'Historial persistente fuera del buffer de la terminal',
+      'Carpetas y notas incluidas, no un historial plano',
+      'Busqueda por comando o por directorio de trabajo',
+      'Sesión con Google y sincronización entre equipos',
+    ],
+  },
+  {
+    titulo: 'Con el historial del shell',
+    tipo: 'other',
+    puntos: [
+      'Se limita al buffer local de la terminal',
+      'Se borra al cerrar la sesión o reiniciar la máquina',
+      'Sin organización ni notas asociadas',
+      'No se comparte entre máquinas ni entre personas',
+    ],
+  },
+];
+
+const especificacion = [
+  { etiqueta: 'Editor', valor: 'Visual Studio Code 1.85+' },
+  { etiqueta: 'Sistemas', valor: 'Windows · macOS · Linux' },
+  { etiqueta: 'Licencia', valor: 'MIT' },
+  { etiqueta: 'Version', valor: '0.0.13' },
+];
+---
+
+<Base title={title} description={description}>
+  <header class="site-header">
+    <div class="wrap site-header__inner">
+      <a class="brand" href="/frontend">
+        <img src="/frontend/icon.png" alt="" width="26" height="26" />
+        <span class="brand__name">STA<span>C</span>Y</span>
+      </a>
+      <nav class="nav" aria-label="Principal">
+        <a class="nav__link" href="#funcionalidades">Funciones</a>
+        <a class="nav__link" href="#diferenciadores">Diferencias</a>
+        <a class="nav__link" href="https://www.stacyprogram.online/docs" rel="noopener">API</a>
+        <a class="btn" href={MARKETPLACE} rel="noopener" target="_blank">
+          Instalar
+          <Icon name="arrow-square-out" weight="bold" />
+        </a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="contenido">
+    <section class="hero">
+      <div class="wrap hero__grid">
+        <div>
+          <h1 class="reveal">Tu historial de terminal, <em>siempre a mano</em>.</h1>
+          <p class="hero__lead reveal reveal--d1">
+            STACY guarda cada comando que ejecutas, lo organiza por proyecto y lo deja a un clic de distancia.
+            Todo desde el panel lateral de VS Code, sin cambiar de terminal.
+          </p>
+          <div class="hero__actions reveal reveal--d2">
+            <a class="btn btn--lg" href={MARKETPLACE} rel="noopener" target="_blank">
+              Instalar en VS Code
+              <Icon name="download-simple" weight="bold" />
+            </a>
+            <a class="btn btn--ghost btn--lg" href="https://www.stacyprogram.online/docs" rel="noopener">
+              Ver la API
+              <Icon name="arrow-right" weight="bold" />
+            </a>
+          </div>
+          <div class="hero__meta reveal reveal--d3">
+            <span><Icon name="monitor" weight="bold" /> Windows</span>
+            <span><Icon name="desktop-tower" weight="bold" /> Linux</span>
+            <span><Icon name="laptop" weight="bold" /> macOS</span>
+            <span><Icon name="check-circle" weight="bold" /> Licencia MIT</span>
+          </div>
+        </div>
+
+        <div class="term reveal reveal--d2" aria-hidden="true">
+          <div class="term__bar">
+            <i></i><i></i><i></i>
+            <span>stacy · bash</span>
+          </div>
+          <pre class="term__body"><span class="dim">$</span> <span class="p">docker compose up -d</span>
+<span class="dim">$</span> <span class="p">git rebase --interactive origin/main</span>
+<span class="dim">$</span> <span class="p">kubectl logs -f api-7d9f</span>
+<span class="ok">STACY ›</span> <span class="p">3 comandos guardados</span>
+<span class="dim">$</span> <span class="p">stacy search "compose"</span>
+<span class="ok">  ✔</span> <span class="dim">docker compose up -d</span>
+<span class="ok">  ✔</span> <span class="dim">docker compose logs -f web</span>
+<span class="ok">  ✔</span> <span class="dim">docker compose build --no-cache</span>
+<span class="dim">$</span> <span class="ok">copiado al portapapeles</span></pre>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="problema">
+      <div class="wrap">
+        <div class="section__head">
+          <h2>El historial de tu terminal no es un archivo</h2>
+          <p>
+            Es un buffer que se sobrescribe, sin organización y sin memoria. STACY parte de ahí para
+            resolver el problema de verdad.
+          </p>
+        </div>
+        <ul class="pain">
+          {problemas.map((p) => (
+            <li>
+              <h3>{p.titulo}</h3>
+              <p>{p.texto}</p>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </section>
+
+    <section class="section" id="solucion">
+      <div class="wrap">
+        <div class="section__head section__head--split">
+          <h2>STACY convierte cada comando en un recurso reutilizable</h2>
+          <p>
+            La extensión se encarga del trabajo tedioso: capturar, organizar y devolver el comando
+            correcto cuando lo necesitas.
+          </p>
+        </div>
+        <div class="solution">
+          <ol class="steps">
+            {pasos.map((s, i) => (
+              <li>
+                <span class="steps__mark">{String(i + 1).padStart(2, '0')}</span>
+                <div>
+                  <h3>{s.titulo}</h3>
+                  <p>{s.texto}</p>
+                </div>
+              </li>
+            ))}
+          </ol>
+          <div class="term" aria-hidden="true">
+            <div class="term__bar">
+              <i></i><i></i><i></i>
+              <span>stacy · vscode</span>
+            </div>
+            <pre class="term__body"><span class="dim">▸</span> <span class="p">STACY: Import Current Terminal Command</span>
+<span class="ok">  ✔</span> <span class="dim">guardado en › Frontend › deploy</span>
+<span class="dim">▸</span> <span class="p">STACY: Search Commands</span>
+<span class="dim">  ?</span> <span class="p">compose</span>
+<span class="ok">  ✔</span> <span class="dim">docker compose up -d</span>
+<span class="ok">  ✔</span> <span class="dim">docker compose logs -f web</span>
+<span class="ok">  ✔</span> <span class="dim">copiado al portapapeles</span></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="funcionalidades">
+      <div class="wrap">
+        <div class="section__head">
+          <h2>Lo que hace la extensión</h2>
+          <p>
+            Un historial que ademas se organiza, se anota y se comparte. Todo con los comandos de la
+            API de STACY.
+          </p>
+        </div>
+        <div class="features">
+          {funcionalidades.map((f) => (
+            <article class="feature">
+              <div class="feature__icon">
+                <Icon name={f.icono} weight="bold" />
+              </div>
+              <h3>{f.titulo}</h3>
+              <p>{f.texto}</p>
+              <ul>
+                {f.puntos.map((p) => (
+                  <li>{p}</li>
+                ))}
+              </ul>
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="diferenciadores">
+      <div class="wrap">
+        <div class="section__head">
+          <h2>Por qué STACY y no el historial de bash</h2>
+          <p>
+            La diferencia no está en guardar comandos, está en devolverlos cuando hacen falta.
+          </p>
+        </div>
+        <div class="diff">
+          {diferenciadores.map((d) => (
+            <div class={`diff__col diff__col--${d.tipo}`}>
+              <h3>{d.titulo}</h3>
+              <ul>
+                {d.puntos.map((p) => (
+                  <li>
+                    <Icon
+                      name={d.tipo === 'stacy' ? 'check-circle' : 'x-circle'}
+                      weight="fill"
+                    />
+                    <span>{p}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+        <dl class="spec">
+          {especificacion.map((s) => (
+            <div class="spec__item">
+              <dt>{s.etiqueta}</dt>
+              <dd>{s.valor}</dd>
+            </div>
+          ))}
+        </dl>
+      </div>
+    </section>
+
+    <section class="cta" id="instalar">
+      <div class="wrap">
+        <div class="cta__box">
+          <div>
+            <h2>Empieza a guardar tus comandos hoy</h2>
+            <p>
+              Instala la extensión, inicia sesión y tu historial deja de desaparecer. Gratis, con
+              licencia MIT.
+            </p>
+            <div class="install">
+              <span class="c">$</span> code --install-extension STACY.stacy-extension
+              <span class="ok"> ✔</span>
+            </div>
+          </div>
+          <div class="cta__actions">
+            <a class="btn btn--lg" href={MARKETPLACE} rel="noopener" target="_blank">
+              Instalar la extensión
+              <Icon name="download-simple" weight="bold" />
+            </a>
+            <a class="btn btn--ghost btn--lg" href="https://www.stacyprogram.online/docs" rel="noopener">
+              Documentacion de la API
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap site-footer__inner">
+      <p>STACY · Extension para Visual Studio Code</p>
+      <nav aria-label="Pie de pagina">
+        <a href={MARKETPLACE} rel="noopener" target="_blank">VS Code Marketplace</a>
+        <a href="https://www.stacyprogram.online/docs" rel="noopener">Documentacion API</a>
+        <a href="https://github.com/johandavidmercado2712-glitch/STACY-EXTENSION" rel="noopener" target="_blank">Código fuente</a>
+      </nav>
+    </div>
+  </footer>
+</Base>

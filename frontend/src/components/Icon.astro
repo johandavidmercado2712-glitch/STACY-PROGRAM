@@ -1,0 +1,32 @@
+---
+// Iconos Phosphor en SVG inline (familia unica en todo el sitio).
+// Los SVG se toman de @phosphor-icons/core y se insertan en el HTML, de modo
+// que heredan `currentColor` y no dependen de una fuente ni de CSS externo.
+import { loadIcon, type IconName } from '../icons/index';
+import type { IconWeight } from '../icons/types';
+
+interface Props {
+  name: IconName;
+  weight?: IconWeight;
+  label?: string;
+}
+
+const { name, weight = 'regular', label } = Astro.props;
+
+const svg = await loadIcon(weight, name);
+const inner = svg.replace(/^[\s\S]*?<svg[^>]*>/, '').replace(/<\/svg>\s*$/, '');
+const viewBox = svg.match(/viewBox="([^"]+)"/)?.[1] ?? '0 0 256 256';
+---
+
+{
+  inner ? (
+    <svg
+      viewBox={viewBox}
+      fill="currentColor"
+      aria-hidden={label ? undefined : 'true'}
+      role={label ? 'img' : undefined}
+      aria-label={label}
+      set:html={inner}
+    />
+  ) : null
+}

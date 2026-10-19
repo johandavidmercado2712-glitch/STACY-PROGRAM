@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /frontend
+Disallow: /api
+Disallow: /token
+
+Sitemap: https://www.stacyprogram.online/frontend/sitemap.xml

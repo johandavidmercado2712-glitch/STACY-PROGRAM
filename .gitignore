@@ -16,3 +16,15 @@ venv/
 Thumbs.db
 .vercel
 .env*
+
+# Frontend Astro
+node_modules/
+frontend/node_modules/
+frontend/dist/
+frontend/.astro/
+.astro/
+
+# Artefactos generados por `vercel build` (duplican requirements.txt)
+pyproject.toml
+uv.lock
+.python-version
