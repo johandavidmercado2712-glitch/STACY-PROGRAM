@@ -90,9 +90,20 @@ const jsonLd = {
       const boot = document.querySelector<HTMLElement>('[data-boot-skeleton]');
       const root = document.documentElement;
 
+      // Minimo visible: aunque la pagina cargue en ~350 ms, el esqueleto
+      // se muestra al menos 450 ms para que la transicion se lea.
+      const bootStart = performance.now();
+      const BOOT_MIN = 450;
+      let revealed = false;
+
       const reveal = () => {
-        root.classList.add('is-booted');
-        boot?.setAttribute('hidden', '');
+        if (revealed) return;
+        revealed = true;
+        const wait = Math.max(0, BOOT_MIN - (performance.now() - bootStart));
+        window.setTimeout(() => {
+          root.classList.add('is-booted');
+          boot?.setAttribute('hidden', '');
+        }, wait);
       };
 
       if (document.readyState === 'complete') {

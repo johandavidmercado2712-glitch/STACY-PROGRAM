@@ -46,6 +46,12 @@
   --shadow-soft: rgba(0, 0, 0, 0.9);
   --inset-hi: rgba(255, 255, 255, 0.03);
 
+  /* Esqueleto de carga: bloques visibles sobre el fondo en ambos temas,
+     con brillo propio que no depende del token generico. */
+  --boot-block: #3a322c;
+  --boot-edge: #4a4036;
+  --boot-shine: rgba(255, 255, 255, 0.14);
+
   /* Superficie de terminal: siempre oscura, es un terminal real. */
   --term-bg: #0f0d0b;
   --term-fg: #f4efe9;
@@ -80,6 +86,11 @@
   --scrollbar-edge: #faf7f2;
   --shadow-soft: rgba(60, 45, 25, 0.28);
   --inset-hi: rgba(255, 255, 255, 0.7);
+
+  /* Esqueleto en tema claro: bloques gris calido sobre crema. */
+  --boot-block: #d8cfc0;
+  --boot-edge: #c4b8a4;
+  --boot-shine: rgba(255, 255, 255, 0.85);
 }
 
 *,
@@ -1048,9 +1059,11 @@ pre {
 .boot__bar,
 .boot__row {
   display: block;
+  position: relative;
+  overflow: hidden;
   border-radius: 8px;
-  background: var(--bg-raise);
-  box-shadow: 0 1px 0 var(--inset-hi) inset;
+  background: var(--boot-block);
+  border: 1px solid var(--boot-edge);
 }
 
 .boot__brand {
@@ -1119,7 +1132,7 @@ pre {
 .boot__btn--ghost {
   width: 9.5rem;
   background: transparent;
-  box-shadow: 0 0 0 1px var(--line) inset;
+  border: 1px solid var(--boot-edge);
 }
 
 .boot__panel {
@@ -1146,24 +1159,33 @@ pre {
   width: 66%;
 }
 
-/* Latido: un unico momento de movimiento, suave y sin destellos. */
-.boot__brand,
-.boot__link,
-.boot__title,
-.boot__line,
-.boot__btn,
-.boot__bar,
-.boot__row {
-  animation: boot-pulse 1.6s var(--ease) infinite;
+/* Brillo: una banda de luz recorre cada bloque. Se percibe movimiento,
+   no un parpadeo, y funciona en ambos temas. */
+.boot__brand::after,
+.boot__link::after,
+.boot__title::after,
+.boot__line::after,
+.boot__btn::after,
+.boot__bar::after,
+.boot__row::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    100deg,
+    transparent 20%,
+    var(--boot-shine) 50%,
+    transparent 80%
+  );
+  animation: boot-shimmer 1.6s var(--ease) infinite;
 }
 
-@keyframes boot-pulse {
-  0%,
-  100% {
-    opacity: 1;
+@keyframes boot-shimmer {
+  from {
+    transform: translateX(-100%);
   }
-  50% {
-    opacity: 0.45;
+  to {
+    transform: translateX(100%);
   }
 }
 
@@ -1184,13 +1206,13 @@ pre {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .boot__brand,
-  .boot__link,
-  .boot__title,
-  .boot__line,
-  .boot__btn,
-  .boot__bar,
-  .boot__row {
+  .boot__brand::after,
+  .boot__link::after,
+  .boot__title::after,
+  .boot__line::after,
+  .boot__btn::after,
+  .boot__bar::after,
+  .boot__row::after {
     animation: none;
   }
 }
