@@ -15,6 +15,7 @@ Rutas incluidas (contrato de STACY-EXTENSION):
     /carpetas/descripcion, /carpetas/{id}/comandos
     /notas, /notas/{id}
     /auth/google/login, /auth/google/callback
+    /api (raiz JSON, antes en /), /salud (health check)
 """
 
 from fastapi import FastAPI
@@ -48,7 +49,7 @@ app.include_router(notas.bp)
 app.include_router(google_oauth.bp)
 
 
-@app.get("/")
+@app.get("/api")
 def raiz():
     return {"ok": True, "mensaje": "STACY API operativa.", "docs": "/docs"}
 

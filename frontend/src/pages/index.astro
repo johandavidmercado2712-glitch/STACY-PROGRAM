@@ -50,6 +50,24 @@ const pasos = [
   },
 ];
 
+const pasosDescarga = [
+  {
+    titulo: 'Abre el panel de STACY e inicia sesión',
+    texto:
+      'En VS Code busca el icono de STACY en la barra lateral e inicia sesión con tu cuenta de Google.',
+  },
+  {
+    titulo: 'Elige tu sistema y descarga el script',
+    texto:
+      'Pulsa el botón de bajar comandos, elige tu sistema (Windows descarga upload_history.ps1, Linux y macOS descargan upload_history.sh) y pulsa Descargar. El script ya trae tu token incluido.',
+  },
+  {
+    titulo: 'Ejecútalo y actualiza el panel',
+    texto:
+      'En Windows corre el script en PowerShell; en Linux o macOS con bash. Después actualiza el panel y tus comandos aparecen con el nombre de tu máquina.',
+  },
+];
+
 const funcionalidades = [
   {
     icono: 'clock-counter-clockwise',
@@ -110,14 +128,15 @@ const especificacion = [
 <Base title={title} description={description}>
   <header class="site-header">
     <div class="wrap site-header__inner">
-      <a class="brand" href="/frontend">
-        <img src="/frontend/icon.png" alt="" width="26" height="26" />
+      <a class="brand" href="/">
+        <img src="/icon.png" alt="" width="26" height="26" />
         <span class="brand__name">STA<span>C</span>Y</span>
       </a>
       <nav class="nav" aria-label="Principal">
         <a class="nav__link" href="#funcionalidades">Funciones</a>
         <a class="nav__link" href="#diferenciadores">Diferencias</a>
-        <a class="nav__link" href="https://www.stacyprogram.online/docs" rel="noopener">API</a>
+        <a class="nav__link" href="#descarga">Descarga</a>
+        <a class="nav__link" href="https://stacyprogram.online/docs" rel="noopener">API</a>
         <ThemeToggle />
         <a class="btn" href={MARKETPLACE} rel="noopener" target="_blank">
           Instalar
@@ -141,7 +160,7 @@ const especificacion = [
               Instalar en VS Code
               <Icon name="download-simple" weight="bold" />
             </a>
-            <a class="btn btn--ghost btn--lg" href="https://www.stacyprogram.online/docs" rel="noopener">
+            <a class="btn btn--ghost btn--lg" href="https://stacyprogram.online/docs" rel="noopener">
               Ver la API
               <Icon name="arrow-right" weight="bold" />
             </a>
@@ -294,6 +313,41 @@ const especificacion = [
       </div>
     </section>
 
+    <section class="section" id="descarga">
+      <div class="wrap">
+        <div class="section__head section__head--split">
+          <h2>Descarga tu historial desde VS Code</h2>
+          <p>
+            La extensión genera un script con tu sesión incluida: lo ejecutas una vez y tus
+            comandos suben a tu cuenta.
+          </p>
+        </div>
+        <div class="solution">
+          <ol class="steps">
+            {pasosDescarga.map((s, i) => (
+              <li>
+                <span class="steps__mark">{String(i + 1).padStart(2, '0')}</span>
+                <div>
+                  <h3>{s.titulo}</h3>
+                  <p>{s.texto}</p>
+                </div>
+              </li>
+            ))}
+          </ol>
+          <div class="term" aria-hidden="true">
+            <div class="term__bar">
+              <i></i><i></i><i></i>
+              <span>stacy · descarga</span>
+            </div>
+            <pre class="term__body"><span class="dim">$</span> <span class="p">cd ~/Downloads && bash upload_history.sh</span>
+<span class="ok">STACY ›</span> <span class="p">142 comandos subidos</span>
+<span class="dim">$</span> <span class="p">cd ~\Downloads && .\upload_history.ps1</span>
+<span class="ok">STACY ›</span> <span class="p">98 comandos subidos</span></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <section class="cta" id="instalar">
       <div class="wrap">
         <div class="cta__box">
@@ -313,7 +367,7 @@ const especificacion = [
               Instalar la extensión
               <Icon name="download-simple" weight="bold" />
             </a>
-            <a class="btn btn--ghost btn--lg" href="https://www.stacyprogram.online/docs" rel="noopener">
+            <a class="btn btn--ghost btn--lg" href="https://stacyprogram.online/docs" rel="noopener">
               Documentacion de la API
             </a>
           </div>
@@ -327,7 +381,7 @@ const especificacion = [
       <p>STACY · Extension para Visual Studio Code</p>
       <nav aria-label="Pie de pagina">
         <a href={MARKETPLACE} rel="noopener" target="_blank">VS Code Marketplace</a>
-        <a href="https://www.stacyprogram.online/docs" rel="noopener">Documentacion API</a>
+        <a href="https://stacyprogram.online/docs" rel="noopener">Documentacion API</a>
         <a href="https://github.com/johandavidmercado2712-glitch/STACY-EXTENSION" rel="noopener" target="_blank">Código fuente</a>
       </nav>
     </div>

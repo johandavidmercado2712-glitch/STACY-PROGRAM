@@ -14,9 +14,42 @@
     }
   ],
   "rewrites": [
+    { "source": "/salud", "destination": "/api/index.py" },
+    { "source": "/token", "destination": "/api/index.py" },
+    { "source": "/register", "destination": "/api/index.py" },
+    { "source": "/api", "destination": "/api/index.py" },
+    { "source": "/api/:resto*", "destination": "/api/index.py" },
+    { "source": "/docs", "destination": "/api/index.py" },
+    { "source": "/openapi.json", "destination": "/api/index.py" },
+    { "source": "/redoc", "destination": "/api/index.py" },
+    { "source": "/users/:resto*", "destination": "/api/index.py" },
+    { "source": "/historial/:resto*", "destination": "/api/index.py" },
+    { "source": "/comandos/:resto*", "destination": "/api/index.py" },
+    { "source": "/carpetas", "destination": "/api/index.py" },
+    { "source": "/carpetas/:resto*", "destination": "/api/index.py" },
+    { "source": "/notas", "destination": "/api/index.py" },
+    { "source": "/notas/:resto*", "destination": "/api/index.py" },
+    { "source": "/auth/:resto*", "destination": "/api/index.py" },
     {
-      "source": "/((?!frontend(?:/|$)).*)",
-      "destination": "/api/index.py"
+      "source": "/_astro/:resto*",
+      "destination": "/frontend/_astro/:resto*"
+    },
+    {
+      "source": "/:ruta((?!frontend(?:/|$)).*)",
+      "destination": "/frontend/:ruta"
+    }
+  ],
+  "redirects": [
+    {
+      "source": "/:ruta*",
+      "has": [{ "type": "host", "value": "www.stacyprogram.online" }],
+      "destination": "https://stacyprogram.online/:ruta*",
+      "permanent": true
+    },
+    {
+      "source": "/frontend/:ruta*",
+      "destination": "/:ruta*",
+      "permanent": true
     }
   ]
 }
