@@ -1,6 +1,10 @@
 {
   "GET /": {
     "codigo": 200,
+    "firma": "bc9d43ba955d84c3"
+  },
+  "GET /api": {
+    "codigo": 200,
     "firma": "2da9ef2906bd58f3"
   },
   "GET /salud": {
@@ -49,6 +53,6 @@
   },
   "GET /openapi.json": {
     "codigo": 200,
-    "firma": "fbf5105bb4b189ee"
+    "firma": "b3670e87fc205eca"
   }
 }
