@@ -80,3 +80,13 @@ CREATE TABLE IF NOT EXISTS notas (
 );
 
 CREATE INDEX IF NOT EXISTS idx_notas_usuario ON notas (id_usuario);
+
+-- Shared folders (team workspaces)
+ALTER TABLE carpetas ADD COLUMN IF NOT EXISTS visibility TEXT NOT NULL DEFAULT 'private';
+ALTER TABLE carpetas ADD COLUMN IF NOT EXISTS team_id BIGINT;
+CREATE TABLE IF NOT EXISTS carpeta_miembros (
+    id_carpeta BIGINT NOT NULL REFERENCES carpetas(id) ON DELETE CASCADE,
+    id_usuario  BIGINT NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
+    rol        TEXT NOT NULL DEFAULT 'viewer',
+    PRIMARY KEY (id_carpeta, id_usuario)
+);
