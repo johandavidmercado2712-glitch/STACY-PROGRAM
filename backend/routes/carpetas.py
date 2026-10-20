@@ -180,3 +180,33 @@ def por_carpeta(id_carpeta: int, usuario=Depends(usuario_actual)):
         f["fecha_ejecucion"] = f["fecha_ejecucion"].isoformat()
         comandos.append(f)
     return {"comandos": comandos}
+
+class Miembro(BaseModel):
+    user_id: int
+    rol: str = Field(default="viewer", max_length=20)
+
+
+@bp.post("/{id_carpeta}/miembros", status_code=201)
+def agregar_miembro(id_carpeta: int, datos: Miembro, usuario=Depends(usuario_actual)):
+    id_usuario = int(usuario["sub"])
+    with conexion() as db:
+        db.execute("SELECT 1 FROM carpetas WHERE id = %s AND id_usuario = %s", (id_carpeta, id_usuario))
+        if not db.fetchone():
+            raise HTTPException(status_code=404, detail="La carpeta no existe")
+        db.execute(
+            "INSERT INTO carpeta_miembros (id_carpeta, id_usuario, rol) VALUES (%s, %s, %s)"
+            " ON CONFLICT (id_carpeta, id_usuario) DO UPDATE SET rol = EXCLUDED.rol",
+            (id_carpeta, datos.user_id, datos.rol),
+        )
+    return {"ok": True}
+
+
+@bp.delete("/{id_carpeta}/miembros/{user_id}")
+def quitar_miembro(id_carpeta: int, user_id: int, usuario=Depends(usuario_actual)):
+    id_usuario = int(usuario["sub"])
+    with conexion() as db:
+        db.execute("SELECT 1 FROM carpetas WHERE id = %s AND id_usuario = %s", (id_carpeta, id_usuario))
+        if not db.fetchone():
+            raise HTTPException(status_code=404, detail="La carpeta no existe")
+        db.execute("DELETE FROM carpeta_miembros WHERE id_carpeta = %s AND id_usuario = %s", (id_carpeta, user_id))
+    return {"ok": True}
