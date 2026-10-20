@@ -37,6 +37,8 @@ def _carpeta(fila):
 class CarpetaNueva(BaseModel):
     nombre: str = Field(min_length=1, max_length=200)
     descripcion: str = Field(default="", max_length=2000)
+    visibility: str = Field(default="private", max_length=20)
+    team_id: int | None = None
 
 
 class Asignacion(BaseModel):
@@ -63,15 +65,25 @@ def _cta_ids(usuario, com_id: int, car_id: int):
     return id_usuario
 
 
+from fastapi import Query
+
 @bp.get("")
-def listar(usuario=Depends(usuario_actual)):
+def listar(scope: str = Query(default="me"), usuario=Depends(usuario_actual)):
     id_usuario = int(usuario["sub"])
     with conexion() as db:
-        db.execute(
-            "SELECT id, nombre, descripcion, fecha_creacion FROM carpetas"
-            " WHERE id_usuario = %s ORDER BY fecha_creacion DESC, id DESC",
-            (id_usuario,),
-        )
+        if scope == "team":
+            db.execute(
+                "SELECT id, nombre, descripcion, visibility, team_id, fecha_creacion FROM carpetas"
+                " WHERE visibility='shared' AND (id_usuario=%s OR id IN (SELECT id_carpeta FROM carpeta_miembros WHERE id_usuario=%s))"
+                " ORDER BY fecha_creacion DESC, id DESC",
+                (id_usuario, id_usuario),
+            )
+        else:
+            db.execute(
+                "SELECT id, nombre, descripcion, visibility, team_id, fecha_creacion FROM carpetas"
+                " WHERE id_usuario = %s ORDER BY fecha_creacion DESC, id DESC",
+                (id_usuario,),
+            )
         filas = db.fetchall()
     return {"carpetas": [_carpeta(f) for f in filas]}
 
@@ -87,9 +99,9 @@ def crear(datos: CarpetaNueva, usuario=Depends(usuario_actual)):
         if db.fetchone():
             raise HTTPException(status_code=409, detail="Ya tienes una carpeta con ese nombre")
         db.execute(
-            "INSERT INTO carpetas (id_usuario, nombre, descripcion)"
-            " VALUES (%s, %s, %s) RETURNING id",
-            (id_usuario, datos.nombre, datos.descripcion),
+            "INSERT INTO carpetas (id_usuario, nombre, descripcion, visibility, team_id)"
+            " VALUES (%s, %s, %s, %s, %s) RETURNING id",
+            (id_usuario, datos.nombre, datos.descripcion, datos.visibility, datos.team_id),
         )
         nueva = db.fetchone()
     return {"ok": True, "carpeta": {"id": nueva["id"], "CAR_ID": nueva["id"],
