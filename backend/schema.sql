@@ -47,7 +47,7 @@ CREATE TABLE IF NOT EXISTS carpetas (
     id            BIGSERIAL PRIMARY KEY,
     id_usuario    BIGINT NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
     nombre        TEXT NOT NULL,
-    descripcion   TEXT DEFAULT '',
+    descripcion   TEXT DEFAULT ,
     fecha_creacion TIMESTAMPTZ NOT NULL DEFAULT now(),
     UNIQUE (id_usuario, nombre)
 );
@@ -90,3 +90,19 @@ CREATE TABLE IF NOT EXISTS carpeta_miembros (
     rol        TEXT NOT NULL DEFAULT 'viewer',
     PRIMARY KEY (id_carpeta, id_usuario)
 );
+
+-- -----------------------------------------------------
+-- notificaciones
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS notificaciones (
+    id              BIGSERIAL PRIMARY KEY,
+    id_usuario      BIGINT NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
+    titulo          TEXT NOT NULL,
+    mensaje         TEXT DEFAULT '',
+    tipo            TEXT NOT NULL DEFAULT 'info', -- share, info, system
+    de              TEXT DEFAULT '', -- quien originó la notificación
+    url             TEXT DEFAULT '', -- URL a la que llevar
+    fecha_creacion  TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_notificaciones_usuario ON notificaciones (id_usuario);

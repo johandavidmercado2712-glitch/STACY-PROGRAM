@@ -14,6 +14,7 @@ Rutas incluidas (contrato de STACY-EXTENSION):
     /carpetas, /carpetas/{id}, /carpetas/asignar, /carpetas/desasignar,
     /carpetas/descripcion, /carpetas/{id}/comandos
     /notas, /notas/{id}
+    /notificaciones, /notificaciones/{id}   ← NUEVO
     /auth/google/login, /auth/google/callback
     /api (raiz JSON, antes en /), /salud (health check)
 """
@@ -23,7 +24,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from config.database import conexion
-from routes import auth, carpetas, google_oauth, historial, notas
+from routes import auth, carpetas, google_oauth, historial, notas, notificaciones
 
 app = FastAPI(
     title="STACY API",
@@ -46,6 +47,7 @@ app.include_router(auth.bp)
 app.include_router(historial.bp)
 app.include_router(carpetas.bp)
 app.include_router(notas.bp)
+app.include_router(notificaciones.bp)  # ← NUEVO
 app.include_router(google_oauth.bp)
 
 
