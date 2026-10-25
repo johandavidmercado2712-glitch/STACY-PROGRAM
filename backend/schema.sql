@@ -75,6 +75,7 @@ CREATE TABLE IF NOT EXISTS notas (
     id_usuario      BIGINT NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
     titulo          TEXT NOT NULL,
     contenido       TEXT DEFAULT '',
+    visibility      TEXT NOT NULL DEFAULT 'private', -- private | shared
     fecha_creacion  TIMESTAMPTZ NOT NULL DEFAULT now(),
     fecha_actualizacion TIMESTAMPTZ NOT NULL DEFAULT now()
 );
@@ -89,6 +90,14 @@ CREATE TABLE IF NOT EXISTS carpeta_miembros (
     id_usuario  BIGINT NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
     rol        TEXT NOT NULL DEFAULT 'viewer',
     PRIMARY KEY (id_carpeta, id_usuario)
+);
+
+-- Shared notes
+CREATE TABLE IF NOT EXISTS nota_miembros (
+    id_nota    BIGINT NOT NULL REFERENCES notas(id) ON DELETE CASCADE,
+    id_usuario BIGINT NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
+    rol        TEXT NOT NULL DEFAULT 'viewer', -- viewer | editor
+    PRIMARY KEY (id_nota, id_usuario)
 );
 
 -- -----------------------------------------------------
