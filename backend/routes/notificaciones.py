@@ -76,7 +76,7 @@ def crear(datos: Notificacion, usuario=Depends(usuario_actual)):
     id_usuario = int(usuario["sub"])
     with conexion() as db:
         db.execute(
-            "INSERT INTO notificaciones (id_usuario, titulo, mensaje, tipo, de, url) VALUES (%s, %s, %s, %s, %s, %s) RETURNING id"
+            "INSERT INTO notificaciones (id_usuario, titulo, mensaje, tipo, de, url) VALUES (%s, %s, %s, %s, %s, %s) RETURNING id",
             (id_usuario, datos.titulo, datos.mensaje, datos.tipo, datos.de, datos.url),
         )
         nueva = db.fetchone()
