@@ -111,7 +111,13 @@ CREATE TABLE IF NOT EXISTS notificaciones (
     tipo            TEXT NOT NULL DEFAULT 'info', -- share, info, system
     de              TEXT DEFAULT '', -- quien originó la notificación
     url             TEXT DEFAULT '', -- URL a la que llevar
+    estado          TEXT NOT NULL DEFAULT 'pendiente', -- pendiente | aceptado | rechazado
+    fecha_respuesta TIMESTAMPTZ, -- cuando el usuario aceptó/rechazó
     fecha_creacion  TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+-- Migración para bases creadas antes de la columna `estado`.
+ALTER TABLE notificaciones ADD COLUMN IF NOT EXISTS estado TEXT NOT NULL DEFAULT 'pendiente';
+ALTER TABLE notificaciones ADD COLUMN IF NOT EXISTS fecha_respuesta TIMESTAMPTZ;
 
 CREATE INDEX IF NOT EXISTS idx_notificaciones_usuario ON notificaciones (id_usuario);

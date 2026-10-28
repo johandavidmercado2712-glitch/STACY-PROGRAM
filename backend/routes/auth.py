@@ -89,4 +89,7 @@ def perfil(usuario=Depends(usuario_actual)):
         raise HTTPException(status_code=401, detail="Usuario no encontrado")
     fila = dict(fila)
     fila["fecha_creacion"] = fila["fecha_creacion"].isoformat()
+    # Asegurar que username sea string (prevenir "[object Object]")
+    if fila.get("username") is not None:
+        fila["username"] = str(fila["username"])
     return fila

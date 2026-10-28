@@ -43,7 +43,7 @@ def listar(scope: str = Query(default="user", regex="^(user|team|all)$"), usuari
         if scope == "team":
             # Notificaciones compartidas por medio de carpetas shared
             db.execute(
-                "SELECT n.id, n.titulo, n.mensaje, n.tipo, n.de, n.url, n.fecha_creacion AS fecha"
+                "SELECT n.id, n.titulo, n.mensaje, n.tipo, n.de, n.url, n.estado, n.fecha_creacion AS fecha"
                 " FROM notificaciones n"
                 " JOIN carpetas c ON c.id_usuario = n.id_usuario"
                 " WHERE c.visibility = 'shared'"
@@ -55,14 +55,14 @@ def listar(scope: str = Query(default="user", regex="^(user|team|all)$"), usuari
         elif scope == "all":
             # TODAS las notificaciones de todos los usuarios
             db.execute(
-                "SELECT id, titulo, mensaje, tipo, de, url, fecha_creacion AS fecha"
+                "SELECT id, titulo, mensaje, tipo, de, url, estado, fecha_creacion AS fecha"
                 " FROM notificaciones"
                 " ORDER BY fecha_creacion DESC, id DESC"
             )
         else:
             # Por defecto: solo notificaciones del usuario actual
             db.execute(
-                "SELECT id, titulo, mensaje, tipo, de, url, fecha_creacion AS fecha"
+                "SELECT id, titulo, mensaje, tipo, de, url, estado, fecha_creacion AS fecha"
                 " FROM notificaciones WHERE id_usuario = %s"
                 " ORDER BY fecha_creacion DESC, id DESC",
                 (id_usuario,),
@@ -81,6 +81,30 @@ def crear(datos: Notificacion, usuario=Depends(usuario_actual)):
         )
         nueva = db.fetchone()
     return {"ok": True, "nota": {"id": nueva["id"]}}
+
+
+def _responder(id_notificacion: int, estado: str, usuario):
+    """Marca una notificación como aceptada o rechazada (solo su dueño)."""
+    id_usuario = int(usuario["sub"])
+    with conexion() as db:
+        db.execute(
+            "UPDATE notificaciones SET estado = %s, fecha_respuesta = now()"
+            " WHERE id = %s AND id_usuario = %s",
+            (estado, id_notificacion, id_usuario),
+        )
+        if db.rowcount == 0:
+            raise HTTPException(status_code=404, detail="La notificación no existe")
+    return {"ok": True, "estado": estado}
+
+
+@bp.post("/{id_notificacion}/aceptar")
+def aceptar(id_notificacion: int, usuario=Depends(usuario_actual)):
+    return _responder(id_notificacion, "aceptado", usuario)
+
+
+@bp.post("/{id_notificacion}/rechazar")
+def rechazar(id_notificacion: int, usuario=Depends(usuario_actual)):
+    return _responder(id_notificacion, "rechazado", usuario)
 
 
 @bp.delete("/{id_nota}")
