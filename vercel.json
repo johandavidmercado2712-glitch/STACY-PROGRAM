@@ -29,6 +29,8 @@
     { "source": "/carpetas/:resto*", "destination": "/api/index.py" },
     { "source": "/notas", "destination": "/api/index.py" },
     { "source": "/notas/:resto*", "destination": "/api/index.py" },
+    { "source": "/notificaciones", "destination": "/api/index.py" },
+    { "source": "/notificaciones/:resto*", "destination": "/api/index.py" },
     { "source": "/auth/:resto*", "destination": "/api/index.py" },
     {
       "source": "/_astro/:resto*",
