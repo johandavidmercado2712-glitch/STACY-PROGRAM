@@ -71,7 +71,7 @@ def listar(scope: str = Query(default="user", regex="^(user|team|all)$"), usuari
     return {"notificaciones": [_notificacion(f) for f in filas]}
 
 
-@bp.post("/", status_code=201)
+@bp.post("", status_code=201)
 def crear(datos: Notificacion, usuario=Depends(usuario_actual)):
     id_usuario = int(usuario["sub"])
     with conexion() as db:
